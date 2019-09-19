@@ -11,7 +11,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io as sio
-import lumerical_tools
 
 #%% run all plots
 def plot_all( contraDC, simulation):

@@ -8,6 +8,15 @@
 	as well as Python model by Mustafa Hammood
 
 	Jonathan Cauchon, September 2019
+
+	
+	Class ChirpedContraDC:
+		Methods:
+			- switchTop, swapCols, swapRows: basic matrix operations
+			- printProgressBar: show progress of computation
+			- 
+
+
 """
 
 """   Notes
@@ -48,7 +57,7 @@ class Waveguide():
 class ChirpedContraDC():
 	def __init__(self, N = 1000, period = 322e-9, DC = 0.5, a = 12, kappa = 48000, T = 300, \
 		resolution = 300, N_seg = 50, wvl_range = [1530e-9,1580e-9], central_wvl = 1550e-9, \
-		alpha = 10, stages = 1, wg1 = Waveguide(w = 0.56e-6), wg2 = Waveguide(w = 0.44e-6)):
+		alpha = 10, stages = 1, w1 = .56e-6, w2 = .44e-6):
 
 		# Instantiatable parameters
 		self.N = N
@@ -64,7 +73,7 @@ class ChirpedContraDC():
 		self.stages = stages # number of cascaded devices
 		self.wavelength = np.linspace(wvl_range[0], wvl_range[1], resolution)
 
-		self.wg1, self.wg2 = wg1, wg2
+		self.w1, self.w2 = w1, w2
 
 		self.antiRefCoeff = 0.01
 
@@ -74,7 +83,8 @@ class ChirpedContraDC():
 		# Chrip
 		self.period_chirp_step = 2e-9 # To comply with GDS resolution
 		# self.period_profile = self.getChirpProfile()
-		self.DC_chirp_step = 0.1
+		self.w_chirp_step = 5e-9
+		# Jflag change the above for 1 nm, eventually
 		# self.DC_profile = self.
 
 
@@ -137,37 +147,69 @@ class ChirpedContraDC():
 		    print()
 
 	# Calculate beta at phase match
-	def getBetaWav(self, beta): 
-		f = 2*math.pi/beta 							# = grating period at phase match
-		minimum = min(abs(f-np.mean(self.period))) 				#index of closest value
-		idx = np.where(abs(f-np.mean(self.period)) == minimum)
-		betaWav = self.wavelength.item(idx[0][0])
-		return betaWav
+	# def getBetaWav(self, beta): 
+	# 	f = 2*math.pi/beta 							# = grating period at phase match
+	# 	minimum = min(abs(f-np.mean(self.period))) 				#index of closest value
+	# 	idx = np.where(abs(f-np.mean(self.period)) == minimum)
+	# 	betaWav = self.wavelength.item(idx[0][0])
+	# 	return betaWav
 
+	# get effective indices vs wg width based on MODE simulations
+	# def getEffectiveIndex(self,w1,w2,plot=False):
+	def getPropConstants(self,w1,w2,plot=False):
+		file = "indices.txt"
+		m = np.loadtxt(file)
 
-	def getPropConstants(self):
-		neffwg1 = self.wg1.neff
-		Dneffwg1 = self.wg1.Dneff
-		neffwg2 = self.wg2.neff
-		Dneffwg2 = self.wg2.Dneff
+		# checking which width combination fits
+		w1 = np.round(w1,10)
+		w2 = np.round(w2,10)
+		idx_w1 = np.where(m==w1,1,0)[:,0]
+		idx_w2 = np.where(m==w2,1,0)[:,1]
+		idx = np.where(idx_w1*idx_w2==1)
+		m_ = m[idx] # array containing only good widths
+
+		p1, p2 = np.polyfit(m_[:,2], m_[:,3],2), np.polyfit(m_[:,2], m_[:,4],2)
+		n1 = p1[0]*self.wavelength**2 + p1[1]*self.wavelength + p1[2]
+		n2 = p2[0]*self.wavelength**2 + p2[1]*self.wavelength + p2[2]
+
+		if plot:
+			plt.figure()
+			plt.plot(m_[:,2]*1e9, m_[:,3],"o-",label="Simulated")
+			plt.plot(wavelength*1e9,n1,".",label="Fitted")
+			plt.legend()
+			plt.show()
+		
+		neffwg1, neffwg2 = n1, n2
+
+	# def getPropConstants(self):
+		# neffwg1 = self.wg1.neff
+		# Dneffwg1 = self.wg1.Dneff
+		# neffwg2 = self.wg2.neff
+		# Dneffwg2 = self.wg2.Dneff
+
 		T0 = 300
 		dneffdT = 1.87E-04      #[/K] assuming dneff/dn=1 (well confined mode)
 		neffThermal = dneffdT*(self.T-T0)
 
-		neff_a_data = neffwg1+Dneffwg1*(self.wavelength-self.central_wvl) + neffThermal
-		neff_b_data = neffwg2+Dneffwg2*(self.wavelength-self.central_wvl) + neffThermal
+		# neff_a_data = neffwg1+Dneffwg1*(self.wavelength-self.central_wvl) + neffThermal
+		# neff_b_data = neffwg2+Dneffwg2*(self.wavelength-self.central_wvl) + neffThermal
+		neff_a_data = neffwg1 + neffThermal
+		neff_b_data = neffwg2 + neffThermal
+
 		Lambda_data_left = self.wavelength
 		Lambda_data_right = self.wavelength
 
-		beta_data_left=2*math.pi/Lambda_data_left*neff_a_data
-		beta_data_right=2*math.pi/Lambda_data_right*neff_b_data
+		# beta_data_left=2*math.pi/Lambda_data_left*neff_a_data
+		# beta_data_right=2*math.pi/Lambda_data_right*neff_b_data
+		beta_left=2*math.pi/Lambda_data_left*neff_a_data
+		beta_right=2*math.pi/Lambda_data_right*neff_b_data
 
-		beta_left = np.interp(self.wavelength, Lambda_data_left, beta_data_left)
-		beta_right = np.interp(self.wavelength, Lambda_data_right, beta_data_right)    
+		# beta_left = np.interp(self.wavelength, Lambda_data_left, beta_data_left)
+		# beta_right = np.interp(self.wavelength, Lambda_data_right, beta_data_right)    
 
-		beta12Wav = self.getBetaWav(beta_left+beta_right)
-		beta1Wav = self.getBetaWav(beta_left)
-		beta2Wav = self.getBetaWav(beta_right)
+		# beta12Wav = self.getBetaWav(beta_left+beta_right)
+		# beta1Wav = self.getBetaWav(beta_left)
+		# beta2Wav = self.getBetaWav(beta_right)
 
 		return beta_left, beta_right
 
@@ -215,16 +257,25 @@ class ChirpedContraDC():
 			plt.ylabel("Period (nm)")
 			plt.show()
 
-		# Duty cycle chirp
-		if isinstance(self.DC, float):
-			self.DC = [self.DC] # convert to list
-		numDC = round((self.DC[-1]-self.DC[0])/self.DC_chirp_step + 1)
-		l_seg = np.ceil(self.N_seg/numDC)
-		DCs = np.linspace(self.DC[0],self.DC[-1],numDC)
-		self.DC_profile = np.repeat(DCs,l_seg)
+		# Waveguide width chirp
+		if isinstance(self.w1, float):
+			self.w2 = [self.w1] # convert to list
+		numW1 = round((self.w1[-1]-self.w1[0])/self.w_chirp_step + 1)
+		numW1 = abs(numW1)
+		l_seg = np.ceil(self.N_seg/numW1)
+		w1s = np.linspace(self.w1[0],self.w1[-1],numW1)
+		self.w1_profile = np.repeat(w1s,l_seg)
+
+		if isinstance(self.w2, float):
+			self.w2 = [self.w2] # convert to list
+		numW2 = round((self.w2[-1]-self.w2[0])/self.w_chirp_step + 1)
+		numW2 = abs(numW2)
+		l_seg = np.ceil(self.N_seg/numW2)
+		w2s = np.linspace(self.w2[0],self.w2[-1],numW2)
+		self.w2_profile = np.repeat(w2s,l_seg)
 
 
-	def propagate(self, beta_left, beta_right, kappa_apod):
+	def propagate(self):
 		# initiate arrays
 		T = np.zeros((1, self.resolution),dtype=complex)
 		R = np.zeros((1, self.resolution),dtype=complex)
@@ -237,6 +288,8 @@ class ChirpedContraDC():
 		LeftRightTransferMatrix = np.zeros((4,4,self.resolution),dtype=complex)
 		TopDownTransferMatrix = np.zeros((4,4,self.resolution),dtype=complex)
 		InOutTransferMatrix = np.zeros((4,4,self.resolution),dtype=complex)
+
+		kappa_apod = self.getApodProfile()
 
 		mode_kappa_a1=1
 		mode_kappa_a2=0 #no initial cross coupling
@@ -256,6 +309,7 @@ class ChirpedContraDC():
 			self.printProgressBar(ii + 1, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
 			for n in range(self.N_seg):
+				beta_left, beta_right = self.getPropConstants(self.w1_profile[n], self.w2_profile[n])
 				l_seg = self.N*np.mean(self.period)/self.N_seg				
 				l_0 = n*l_seg
 
@@ -321,10 +375,8 @@ class ChirpedContraDC():
 		self.TransferMatrix = LeftRightTransferMatrix
 
 	def simulate(self):
-		beta_left, beta_right = self.getPropConstants()
-		kappa_apod = self.getApodProfile()
 		self.getChirpProfile()
-		self.propagate(beta_left, beta_right, kappa_apod)
+		self.propagate()
 
 	def getPerformance(self):
 		if self.E_Thru is not None:
@@ -389,9 +441,11 @@ class ChirpedContraDC():
 		plt.tick_params(axis='y', direction="in", right=True)
 
 		plt.subplot(grid[2,0])
-		plt.plot(self.N/self.N_seg*np.arange(0,self.DC_profile.size),self.DC_profile)
+		plt.plot(self.N/self.N_seg*np.arange(0,self.w1_profile.size),self.w1_profile*1e9,label="wg 1")
+		plt.plot(self.N/self.N_seg*np.arange(0,self.w2_profile.size),self.w2_profile*1e9,label="wg 2")
 		plt.xlabel("Period Along Grating")
-		plt.ylabel("Duty Cycle (%)")
+		plt.ylabel("WG Width (nm)")
+		plt.legend()
 		plt.tick_params(axis='y', direction="in", right=True)
 
 		plt.subplot(grid[0,1:])
@@ -414,3 +468,4 @@ class ChirpedContraDC():
 						direction="in", right=True)
 
 		plt.show()
+
