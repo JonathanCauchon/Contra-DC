@@ -20,12 +20,13 @@ from ChirpedContraDC_v1 import *
 
 
 # width chirp
-w1 = [.55e-6, .56e-6]
+w1 = [.56e-6, .57e-6]
 w2 = [.44e-6, .45e-6]
 w1_ = [.57e-6, .55e-6]
 w2_ = [.45e-6, .43e-6]
-p  = [320e-9, 325e-9]
+p  = [316e-9, 324e-9]
+wr = [1500e-9,1600e-9]
 
-d = ChirpedContraDC(w1=w1,w2=w2,resolution=100,a=5,period=p,N=2000)
+d = ChirpedContraDC(w1=w1,w2=w2,resolution=50,a=5,period=p,N=1000, wvl_range=wr)
 d.simulate()
 d.displayResults()

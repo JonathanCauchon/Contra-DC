@@ -157,29 +157,42 @@ class ChirpedContraDC():
 	# get effective indices vs wg width based on MODE simulations
 	# def getEffectiveIndex(self,w1,w2,plot=False):
 	def getPropConstants(self,w1,w2,plot=False):
-		file = "indices.txt"
-		m = np.loadtxt(file)
 
-		# checking which width combination fits
-		w1 = np.round(w1,10)
-		w2 = np.round(w2,10)
-		idx_w1 = np.where(m==w1,1,0)[:,0]
-		idx_w2 = np.where(m==w2,1,0)[:,1]
-		idx = np.where(idx_w1*idx_w2==1)
-		m_ = m[idx] # array containing only good widths
+		#-------------/ OLD, better version below
+		# file = "indices.txt"
+		# m = np.loadtxt(file)
 
-		p1, p2 = np.polyfit(m_[:,2], m_[:,3],2), np.polyfit(m_[:,2], m_[:,4],2)
-		n1 = p1[0]*self.wavelength**2 + p1[1]*self.wavelength + p1[2]
-		n2 = p2[0]*self.wavelength**2 + p2[1]*self.wavelength + p2[2]
+		# # checking which width combination fits
+		# w1 = np.round(w1,10)
+		# w2 = np.round(w2,10)
+		# idx_w1 = np.where(m==w1,1,0)[:,0]
+		# idx_w2 = np.where(m==w2,1,0)[:,1]
+		# idx = np.where(idx_w1*idx_w2==1)
+		# m_ = m[idx] # array containing only good widths
 
-		if plot:
-			plt.figure()
-			plt.plot(m_[:,2]*1e9, m_[:,3],"o-",label="Simulated")
-			plt.plot(wavelength*1e9,n1,".",label="Fitted")
-			plt.legend()
-			plt.show()
-		
-		neffwg1, neffwg2 = n1, n2
+		# p1, p2 = np.polyfit(m_[:,2], m_[:,3],2), np.polyfit(m_[:,2], m_[:,4],2)
+		# n1 = p1[0]*self.wavelength**2 + p1[1]*self.wavelength + p1[2]
+		# n2 = p2[0]*self.wavelength**2 + p2[1]*self.wavelength + p2[2]
+
+		# if plot:
+		# 	plt.figure()
+		# 	plt.plot(m_[:,2]*1e9, m_[:,3],"o-",label="Simulated")
+		# 	plt.plot(wavelength*1e9,n1,".",label="Fitted")
+		# 	plt.legend()
+		# 	plt.show()
+		#-----------\ OLD
+
+		# This performs a 3d interpolation to estimate effective indices
+		n1 = np.reshape(np.loadtxt("Database/neff/neff_1.txt"),(5,5,5))
+		n2 = np.reshape(np.loadtxt("Database/neff/neff_2.txt"),(5,5,5))
+		w1_w2_wvl = np.loadtxt("Database/neff/w1_w2_lambda.txt")
+		n1_ = np.zeros((self.wavelength.size,1))
+		n2_ = np.zeros((self.wavelength.size,1))
+		for i in range(self.wavelength.size):
+			n1_[i] = scipy.interpolate.interpn(w1_w2_wvl, n1, [w1,w2,self.wavelength[i]])
+			n2_[i] = scipy.interpolate.interpn(w1_w2_wvl, n2, [w1,w2,self.wavelength[i]])
+
+		neffwg1, neffwg2 = n1_, n2_ # the interpolated values
 
 	# def getPropConstants(self):
 		# neffwg1 = self.wg1.neff
