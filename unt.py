@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 # plt.show()
 
 
-print(dir(plt))
+os.system("clear")
 
 
 

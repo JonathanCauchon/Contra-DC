@@ -27,6 +27,9 @@
 
 from Modules import *
 
+def clc():
+	print ("\n"*10)
+
 class Waveguide():
 	def __init__(self, w=500e-9, h=220e-9, neff=2.5, Dneff=-969000, simulate=False):
 
@@ -57,7 +60,7 @@ class Waveguide():
 class ChirpedContraDC():
 	def __init__(self, N = 1000, period = 322e-9, DC = 0.5, a = 12, kappa = 48000, T = 300, \
 		resolution = 300, N_seg = 50, wvl_range = [1530e-9,1580e-9], central_wvl = 1550e-9, \
-		alpha = 10, stages = 1, w1 = .56e-6, w2 = .44e-6, wg1 = Waveguide(w=560e-9),wg2=Waveguide(w=440e-9)):
+		alpha = 10, stages = 1, w1 = .56e-6, w2 = .44e-6):
 
 		# Instantiatable parameters
 		self.N = N
@@ -71,14 +74,11 @@ class ChirpedContraDC():
 		self.central_wvl = central_wvl
 		self.alpha = alpha # dB/cm
 		self.stages = stages # number of cascaded devices
-		self.wavelength = np.linspace(wvl_range[0], wvl_range[1], resolution)
-
+		self.wvl_range = wvl_range
+		self.wavelength = np.linspace(self.wvl_range[0], self.wvl_range[1], resolution)
 		self.w1, self.w2 = w1, w2
 
 		self.antiRefCoeff = 0.01
-
-		self.wg1 = wg1
-		self.wg2 = wg2
 
 		# Constants
 		# c = 299792458           #[m/s]
@@ -130,17 +130,6 @@ class ChirpedContraDC():
 
 	# Print iterations progress
 	def printProgressBar (self, iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
-		"""
-		Call in a loop to create terminal progress bar
-			@params:
-			iteration   - Required  : current iteration (Int)
-			total       - Required  : total iterations (Int)
-			prefix      - Optional  : prefix string (Str)
-			suffix      - Optional  : suffix string (Str)
-			decimals    - Optional  : positive number of decimals in percent complete (Int)
-			length      - Optional  : character length of bar (Int)
-			fill        - Optional  : bar fill character (Str)
-			"""
 		percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
 		filledLength = int(length * iteration // total)
 		bar = fill * filledLength + '-' * (length - filledLength)
@@ -168,7 +157,17 @@ class ChirpedContraDC():
 		self.beta1_profile = np.zeros((self.resolution, self.N_seg))
 		self.beta2_profile = np.zeros((self.resolution, self.N_seg))
 
+		progressbar_width = self.resolution
+		clc()
+		print("Calculating propagation constants...")		
+		self.printProgressBar(0, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
+
 		for i in range(self.resolution): # i=lambda, j=z
+
+			clc()
+			print("Calculating propagation constants...")
+			self.printProgressBar(i + 1, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
+
 			for j in range(self.N_seg):
 				self.n1_profile [i,j] = neffThermal + scipy.interpolate.interpn(w1_w2_wvl, n1, [self.w1_profile[j],self.w2_profile[j],self.wavelength[i]])
 				self.n2_profile [i,j] = neffThermal + scipy.interpolate.interpn(w1_w2_wvl, n2, [self.w1_profile[j],self.w2_profile[j],self.wavelength[i]])
@@ -199,6 +198,8 @@ class ChirpedContraDC():
 			plt.xlabel("Segment number")
 			plt.ylabel("Supermode Effective Indices")
 			plt.show()
+
+			clc()
 
 
 
@@ -295,9 +296,11 @@ class ChirpedContraDC():
 		        
 		# Propagation. 
 		# i: wavelength, related to self.resolution
-		# j: profiles along grating, related to self.N_seg	        
+		# j: profiles along grating, related to self.N_seg	
+       
 		for ii in range(self.resolution):
-			#Update Bar
+			clc()
+			print("Propagating along grating...")
 			self.printProgressBar(ii + 1, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
 			l_0 = 0
@@ -310,24 +313,8 @@ class ChirpedContraDC():
 				kappa_11 = self.antiRefCoeff * self.apod_profile[n]
 				kappa_22 = self.antiRefCoeff * self.apod_profile[n]
 
-
-				#-------------------------------------------------#
 				beta_del_1 = self.beta1_profile[ii,n] - math.pi/self.period_profile[n]  - j*alpha_e/2
 				beta_del_2 = self.beta2_profile[ii,n] - math.pi/self.period_profile[n]  - j*alpha_e/2
-				#-------------------------------------------------#	
-
-				# S1 = Matrix of propagation in each guide & direction
-				# S_1=[  [j*beta_del_1.item(ii), 0, 0, 0], [0, j*beta_del_2.item(ii), 0, 0],
-				#        [0, 0, -j*beta_del_1.item(ii), 0],[0, 0, 0, -j*beta_del_2.item(ii)]]
-
-				# # S2 = transfert matrix
-				# S_2=  [[-j*beta_del_1.item(ii),  0,  -j*kappa_11*np.exp(j*2*beta_del_1.item(ii)*l_0),  -j*kappa_12*np.exp(j*(beta_del_1.item(ii)+beta_del_2.item(ii))*l_0)],
-				#        [0,  -j*beta_del_2.item(ii),  -j*kappa_12*np.exp(j*(beta_del_1.item(ii)+beta_del_2.item(ii))*l_0),  -j*kappa_22*np.exp(j*2*beta_del_2.item(ii)*l_0)],
-				#        [j*np.conj(kappa_11)*np.exp(-j*2*beta_del_1.item(ii)*l_0),  j*np.conj(kappa_12)*np.exp(-j*(beta_del_1.item(ii)+beta_del_2.item(ii))*l_0),  j*beta_del_1.item(ii),  0],
-				#        [j*np.conj(kappa_12)*np.exp(-j*(beta_del_1.item(ii)+beta_del_2.item(ii))*l_0),  j*np.conj(kappa_22)*np.exp(-j*2*beta_del_2.item(ii)*l_0),  0,  j*beta_del_2.item(ii)]]
-
-
-
 
 				S_1=[  [j*beta_del_1, 0, 0, 0], [0, j*beta_del_2, 0, 0],
 				       [0, 0, -j*beta_del_1, 0],[0, 0, 0, -j*beta_del_2]]
@@ -337,7 +324,6 @@ class ChirpedContraDC():
 				       [0,  -j*beta_del_2,  -j*kappa_12*np.exp(j*(beta_del_1+beta_del_2)*l_0),  -j*kappa_22*np.exp(j*2*beta_del_2*l_0)],
 				       [j*np.conj(kappa_11)*np.exp(-j*2*beta_del_1*l_0),  j*np.conj(kappa_12)*np.exp(-j*(beta_del_1+beta_del_2)*l_0),  j*beta_del_1,  0],
 				       [j*np.conj(kappa_12)*np.exp(-j*(beta_del_1+beta_del_2)*l_0),  j*np.conj(kappa_22)*np.exp(-j*2*beta_del_2*l_0),  0,  j*beta_del_2]]
-
 
 				P0=np.matmul(scipy.linalg.expm(np.asarray(S_1)*l_seg),scipy.linalg.expm(np.asarray(S_2)*l_seg))
 				if n == 0:
@@ -383,13 +369,10 @@ class ChirpedContraDC():
 		self.TransferMatrix = LeftRightTransferMatrix
 
 	def simulate(self):
-		# self.getApodProfile()
-		# self.getChirpProfile()
-		# self.propagate()
-
 		self.getApodProfile()
 		self.getChirpProfile()
 		self.getPropConstants()
+		self.propagate()
 
 	def getPerformance(self):
 		if self.E_Thru is not None:
@@ -415,7 +398,7 @@ class ChirpedContraDC():
 			smoothness = -1
 
 			self.performance = \
-				[("Reflection Wavelength" , int(ref_wvl*1e9)           ,  "nm"), \
+				[("Reflection Wavelength" , np.round(ref_wvl*1e9,1)           ,  "nm"), \
 				("Bandwidth"              , np.round(bandwidth*1e9,1)  ,  "nm"), \
 				("Max Reflection"         , np.round(dropMax,2)          ,  "dB"), \
 				("Average Reflection"     , np.round(avg,2)              ,  "dB"), \
@@ -426,6 +409,10 @@ class ChirpedContraDC():
 
 	# Display Plots and figures of merit 
 	def displayResults(self):
+
+		clc()
+		print("Displaying results.")
+
 		self.getPerformance()
 		thruAmplitude = 10*np.log10(np.abs(self.E_Thru[0,:])**2)
 		dropAmplitude = 10*np.log10(np.abs(self.E_Drop[0,:])**2)
@@ -434,9 +421,9 @@ class ChirpedContraDC():
 		y = np.sin(x**2)
 
 		fig = plt.figure(figsize=(9,6))
-		grid = plt.GridSpec(3,3)
+		grid = plt.GridSpec(6,3)
 
-		plt.subplot(grid[0,0])
+		plt.subplot(grid[0:2,0])
 		plt.title("Grating Profiles")
 		plt.plot(np.arange(0,self.N_seg),self.apod_profile/1000)
 		plt.xticks([])
@@ -444,21 +431,24 @@ class ChirpedContraDC():
 		plt.tick_params(axis='y', direction="in", right=True)
 		plt.text(self.N_seg/2,self.kappa/4/1000,"a = "+str(self.a),ha="center")
 
-		plt.subplot(grid[1,0])
+		plt.subplot(grid[2:4,0])
 		plt.plot(self.period_profile*1e9)
 		plt.xticks([])
 		plt.ylabel("Pitch (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 
-		plt.subplot(grid[2,0])
+		plt.subplot(grid[4,0])
 		plt.plot(self.N/self.N_seg*np.arange(0,self.w1_profile.size),self.w1_profile*1e9,label="wg 1")
+		plt.ylabel("WG Widths (nm)")
+		plt.xticks([])
+
+		plt.subplot(grid[5,0])
 		plt.plot(self.N/self.N_seg*np.arange(0,self.w2_profile.size),self.w2_profile*1e9,label="wg 2")
 		plt.xlabel("Period Along Grating")
-		plt.ylabel("WG Width (nm)")
-		plt.legend()
-		plt.tick_params(axis='y', direction="in", right=True)
+		plt.tick_params(axis='y', direction="in", right=True)	
 
-		plt.subplot(grid[0,1:])
+
+		plt.subplot(grid[0:2,1:])
 		plt.title("Filter Performance")
 		numElems = np.size(self.performance)/3
 		plt.axis([0,1,-numElems+1,1])
@@ -468,7 +458,7 @@ class ChirpedContraDC():
 		plt.xticks([])
 		plt.yticks([])
 
-		plt.subplot(grid[1:,1:])
+		plt.subplot(grid[2:,1:])
 		plt.plot(self.wavelength*1e9,thruAmplitude,label="Thru port")
 		plt.plot(self.wavelength*1e9,dropAmplitude,label="Drop port")
 		plt.legend()
@@ -476,27 +466,7 @@ class ChirpedContraDC():
 		plt.ylabel("Response (dB)")
 		plt.tick_params(axis='y', which='both', labelleft=False, labelright=True, \
 						direction="in", right=True)
+		plt.tick_params(axis='x', top=True)
 
 		plt.show()
-
-
-
-
-
-
-w1 = [.55e-6, .57e-6]
-w2 = [.43e-6, .45e-6]
-w1_ = [.56e-6, .56e-6]
-w2_ = [.44e-6, .44e-6]
-p  = [316e-9, 324e-9]
-p_ = 324e-9
-wr = [1500e-9,1700e-9]
-wr_ = [1530e-9,1600e-9]
-
-# d = ChirpedContraDC(w1=.56e-6,w2=.44e-6,resolution=3,a=5,period=324e-9,N=1000, wvl_range=wr, N_seg = 50)
-d = ChirpedContraDC(w1=w1_, w2=w2_,period=p_,resolution = 100, N_seg = 50, wvl_range=wr_)
-d.getApodProfile()
-d.getChirpProfile(plot=False)
-d.getPropConstants(plot=False)
-d.propagate()
-d.displayResults()
+		clc()
