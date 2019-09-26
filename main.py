@@ -29,9 +29,26 @@ p_ = 324e-9
 wr = [1500e-9,1700e-9]
 wr_ = [1530e-9,1600e-9]
 
-d = ChirpedContraDC(N=3800, a=5, w1=w1_, w2=w2_, period=p, resolution = 500, N_seg = 100, wvl_range=wr)
+# good one:
+# d = ChirpedContraDC(N=3800, a=5, w1=w1_, w2=w2_, period=p, resolution = 500, N_seg = 100, wvl_range=wr)
+# d.simulate()
+# d.displayResults()
+
+
+d = ChirpedContraDC(stages = 2, resolution = 50)
 d.simulate()
 d.displayResults()
+
+# d.simulate()
+# d.getPerformance()
+# d.displayResults()
+# print(vars(d))
+
+
+
+
+
+
 
 # standard = ChirpedContraDC(period=324e-9, resolution=200, wvl_range=[1550e-9,1600e-9])
 # standard.simulate()
