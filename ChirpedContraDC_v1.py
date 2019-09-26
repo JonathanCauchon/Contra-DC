@@ -99,18 +99,9 @@ class ChirpedContraDC():
 	def wavelength(self):
 		return np.linspace(self.wvl_range[0], self.wvl_range[1], self.resolution)
 
-	@ wavelength.setter
-	def wavelength(self):
-		self.wavelength = np.linspace(self.wvl_range[0], self.wvl_range[1], self.resolution)
-
-
 	@ property
 	def c(self):
 		return 299792458
-
-	@ c.setter
-	def c(self, value):
-		print("The value of c can't be changed")
 
 
 	#%% linear algebra numpy manipulation functions
