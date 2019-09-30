@@ -35,14 +35,9 @@ wr_ = [1530e-9,1600e-9]
 # d.displayResults()
 
 
-d = ChirpedContraDC(stages = 2, resolution = 50)
-d.simulate()
-d.displayResults()
-
+# d = ChirpedContraDC(stages = 2, resolution = 50)
 # d.simulate()
-# d.getPerformance()
 # d.displayResults()
-# print(vars(d))
 
 
 
@@ -71,12 +66,13 @@ if ff[0]:
 		lam[i] = cdc.performance[0][1]
 
 	plt.figure()
-	plt.plot(periods*1e9,lam,"o-")
-	plt.xlabel("Grating period (nm)")
+	plt.plot((periods-324e-9)*1e9,lam,"o-")
+	plt.xlabel("Period Detuning (nm)")
 	plt.ylabel("Centre Reflection Wavelength (nm)")
 	plt.savefig("Plots/centre_wvl_vs_period.pdf")
 	# plt.show()
 
+# lam_p = lam
 
 if ff[1]:
 	w1s = np.arange(.55e-6,.57e-6,2e-9)
@@ -135,7 +131,10 @@ if ff[3]:
 	plt.show()
 
 
-
+# print(lam)
+# print(lam_p)
+# print(periods)
+# print(dw)
 
 if ff[4]:
 	# Contruction of a custom w1w2 chirp profile
@@ -144,4 +143,29 @@ if ff[4]:
 	p = []
 
 
+def estimate_wvl(period, dw):
+	periods = np.arange(310e-9,330e-9,2e-9)
+	lam_p = 1e-9*np.array([1526.7, 1532.7, 1538.2, 1543.6, 1549.7, 1555.8, 1561.2, 1566.7, 1572.7, 1578.2, 1583.6])
+	lam = 1e-9*np.array([1560.5, 1561.7, 1563. , 1564.4, 1565.6, 1566.8, 1568., 1569.2, 1570.5, 1571.7, 1572.9])
+	d_w = np.array([-1.00000000e-08, -8.00000000e-09, -6.00000000e-09, -4.00000000e-09, -2.00000000e-09, -5.29395592e-23,  2.00000000e-09,  4.00000000e-09, 6.00000000e-09,  8.00000000e-09,  1.00000000e-08])
+	dlam_dp, p_0 = np.polyfit(periods, lam_p, 1)
+	dlam_dw, w_0 = np.polyfit(d_w, lam, 1)
 
+	wvl = dlam_dp*period + p_0 + dlam_dw*dw
+	return wvl
+
+p = 316e-9
+dw = -8e-9
+
+
+
+# proof = ChirpedContraDC(resolution = 100, period = p, w1 = .56e-6+dw, w2 = .44e-6+dw)
+# proof.simulate()
+# proof.getPerformance()
+
+# print(estimate_wvl(p,dw)*1e9)
+# print(proof.performance[0][1])
+# plt.plot(np.linspace(1,30,30), np.linspace(1530,1580,30),"o")
+# plt.ylabel("Targeted ref. wavelength Range (nm)")
+# plt.xlabel("Discrtized segments along grating")
+# plt.show()
