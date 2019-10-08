@@ -6,3 +6,4 @@ import scipy.interpolate
 import matplotlib.pyplot as plt
 import sys
 import warnings
+import copy
