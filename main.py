@@ -29,10 +29,16 @@ p_ = 324e-9
 wr = [1500e-9,1700e-9]
 wr_ = [1530e-9,1600e-9]
 
-# good one:
-# d = ChirpedContraDC(N=3800, a=5, w1=w1_, w2=w2_, period=p, resolution = 500, N_seg = 100, wvl_range=wr)
-# d.simulate()
-# d.displayResults()
+#-----------------/ Hall of fame
+HOF = [ChirpedContraDC(N=3800, a=5, w1=w1_, w2=w2_, period=p, resolution = 500, N_seg = 100, wvl_range=wr),
+ChirpedContraDC(N=1000, resolution=100, wvl_range=[1500e-9,1600e-9], period=[312e-9,314e-9]),
+ChirpedContraDC(a=1, N=1200, resolution=100, wvl_range=[1500e-9,1600e-9], period=[312e-9,316e-9]),
+ChirpedContraDC(a=1, N=1600, resolution=100, wvl_range=[1500e-9,1600e-9], period=[312e-9,318e-9]),
+ChirpedContraDC(a=1, N=1400, resolution=100, wvl_range=[1500e-9,1600e-9], period=[312e-9,318e-9]),
+ChirpedContraDC(a=1, N=1300, resolution=100, wvl_range=[1500e-9,1600e-9], period=[312e-9,320e-9]),
+ChirpedContraDC(a=1, N=1800, resolution=100, wvl_range=[1500e-9,1600e-9], period=[312e-9,322e-9])
+]
+#-----------------\
 
 
 # d = ChirpedContraDC(stages = 2, resolution = 50)
@@ -142,6 +148,26 @@ if ff[3]:
 # d = ChirpedContraDC(resolution=100, period=p_, w1 = w1_, w2 = w2_)
 # d.simulate()
 # d.displayResults()
-d2 = ChirpedContraDC(a=0, resolution=100, N=1000, wvl_range = [1510e-9, 1570e-9], target_wvl = [1530e-9, 1555e-9])
-d2.simulate()
-d2.displayResults()
+# d2 = ChirpedContraDC(a=1, resolution=100, N=1500, wvl_range = [1490e-9, 1600e-9], target_wvl = [1540e-9, 1555e-9])
+# d2.simulate()
+# d2.displayResults()
+
+
+
+# d = ChirpedContraDC(a=1,resolution=100, N=900, wvl_range=[1500e-9,1600e-9],target_wvl=[1530e-9,1540e-9])
+# d.getApodProfile()
+# d.getChirpProfile()
+
+# Ns = np.arange(800,1500,100)
+
+# for N in Ns:
+# 	d.N = N
+# 	d.getPropConstants(bar=True)
+# 	d.propagate(bar=True)
+# 	d.displayResults()
+w1 = [.56e-6,.565e-6]
+w2 = [.44e-6,.445e-6]
+# d = ChirpedContraDC(a=1, N=1800, resolution=100,w1=w1,w2=w2, wvl_range=[1500e-9,1600e-9], period=[310e-9,330e-9])
+d = ChirpedContraDC(a=1, N=1800, period=320e-9, w1=w1,w2=w2,wvl_range=[1500e-9,1600e-9])
+d.simulate()
+d.displayResults()
