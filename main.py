@@ -152,22 +152,96 @@ if ff[3]:
 # d2.simulate()
 # d2.displayResults()
 
+# HOF
+HOF.append(ChirpedContraDC(N_seg=10, a=1,resolution=100, N=2100, wvl_range=[1490e-9,1640e-9],target_wvl=[1540e-9,1580e-9]))
+HOF.append(ChirpedContraDC(N_seg=10, a=1,resolution=100, N=2400, wvl_range=[1490e-9,1640e-9],target_wvl=[1540e-9,1580e-9]))
+HOF.append(ChirpedContraDC(N_seg=20, a=1,resolution=100, N=2145, wvl_range=[1490e-9,1640e-9],target_wvl=[1540e-9,1580e-9]))
+
+N_seg = 100
+frac = 1/4
+# period
+p = [312e-9, 324e-9]
+p1 = p[0]*np.ones(int(N_seg*frac))
+p2 = np.linspace(p[0], p[1], int(N_seg*(1-2*frac)))
+p2 = np.round(p2/2,9)*2
+p3 = p[1]*np.ones(int(N_seg*frac))
+
+p1=np.append(p1,p2)
+p1=np.append(p1,p3)
+p1=np.append(p1,p[1])
+print(p1)
 
 
-# d = ChirpedContraDC(a=1,resolution=100, N=900, wvl_range=[1500e-9,1600e-9],target_wvl=[1530e-9,1540e-9])
-# d.getApodProfile()
+# N_seg = 50
+# frac = 1/4
+# N_c = int(N_seg*(1-2*frac))
+# N_ = int(N_seg*frac)
+
+d = ChirpedContraDC(N_seg=N_seg, a=1,resolution=300, N=2100, wvl_range=[1400e-9,1700e-9])
+d.getApodProfile()
+d.getChirpProfile()
+d.period_profile = p1
+while d.period_profile.size < N_seg:
+	d.period_profile = np.append(d.period_profile, p2[0])
+d.getPropConstants(True)
+d.propagate(True)
+# d.displayResults()
+
+
+thru = 10*np.log10(np.abs(d.E_Drop[0,:])**2)
+wvl = d.wavelength
+
+plt.figure()
+plt.plot(wvl*1e9, 3*thru)
+plt.show()
+
+
+
+# print(d.apod_profile.size, d.apod_profile)
+
+# d.N_seg = N_c
 # d.getChirpProfile()
+# # d.N_seg = N_seg
+# p1 = d.period_profile[0]*np.ones(N_)
+# p2 = d.period_profile[-1]*np.ones(N_)
+# w11 = d.w1_profile[0]*np.ones(N_)
+# # w12 = d.w1_profile[-1]*np.ones(N_)
+# w21 = d.w2_profile[0]*np.ones(N_)
+# # w22 = d.w2_profile[-1]*np.ones(N_)
 
-# Ns = np.arange(800,1500,100)
+# d.period_profile = np.append(p1, d.period_profile)
+# d.period_profile = np.append(d.period_profile, p2)
+
+# d.w1_profile = np.append(w11, d.w1_profile)
+# while d.w1_profile.size < N_seg:
+# 	d.w1_profile = np.append(d.w1_profile, d.w1_profile[-1])
+
+# d.w2_profile = np.append(w21, d.w2_profile)
+# while d.w2_profile.size < N_seg:
+# 	d.w2_profile = np.append(d.w2_profile, d.w2_profile[-1])
+
+# while d.period_profile.size < N_seg:
+# 	d.period_profile = np.append(d.period_profile, p2[0])
+# print(d.period_profile)
+# d.getPropConstants(bar=True)
+# d.propagate(bar=True)
+# print(d.apod_profile.size)
+# d.displayResults()
+
+
+# Ns = np.arange(2000,2500,N_seg)
+# As = np.arange(1,13,2)
 
 # for N in Ns:
 # 	d.N = N
+# 	d.resolution = 200
 # 	d.getPropConstants(bar=True)
 # 	d.propagate(bar=True)
+# 	print(d.N,d.N_seg)
 # 	d.displayResults()
-w1 = [.56e-6,.565e-6]
-w2 = [.44e-6,.445e-6]
+# w1 = [.56e-6,.565e-6]
+# w2 = [.44e-6,.445e-6]
 # d = ChirpedContraDC(a=1, N=1800, resolution=100,w1=w1,w2=w2, wvl_range=[1500e-9,1600e-9], period=[310e-9,330e-9])
-d = ChirpedContraDC(a=1, N=1800, period=320e-9, w1=w1,w2=w2,wvl_range=[1500e-9,1600e-9])
-d.simulate()
-d.displayResults()
+# d = ChirpedContraDC(a=1, N=1800, period=320e-9, w1=w1,w2=w2,wvl_range=[1500e-9,1600e-9])
+# d.simulate()
+# d.displayResults()

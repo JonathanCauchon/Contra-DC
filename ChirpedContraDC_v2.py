@@ -68,10 +68,10 @@ class ChirpedContraDC():
 		# Gives warnings, errors, makes corrections
 
 		# Check if N is a multiple of N_seg
-		if self.N%self.N_seg:
-			print("Number of periods (N) should be an integer multiple of the number of segments (N_seg).")
-			self.N_seg = 50
-			print("Number of segments was changed to "+str(self.N_seg)+".")
+		# if self.N%self.N_seg:
+		# 	print("Number of periods (N) should be an integer multiple of the number of segments (N_seg).")
+		# 	self.N_seg = 50
+		# 	print("Number of segments was changed to "+str(self.N_seg)+".")
 
 
 	# Property functions: changing one property automatically affects others
@@ -243,6 +243,7 @@ class ChirpedContraDC():
 		# creating dummy device and estimating parameters through fit
 		dummy = copy.copy(self)
 		dummy.target_wvl = None # Most important line ever ;)
+		dummy.N = 500 # Doesn't really change centre wavelength and saves time
 		dummy.period = np.round((target_wvl - p_0)/dlam_dp/self.period_chirp_step)*self.period_chirp_step
 		dw = np.round((target_wvl - dlam_dp*dummy.period - p_0)/dlam_dw, 9)
 		dummy.w1 = dummy.w1 + dw 
@@ -543,26 +544,26 @@ class ChirpedContraDC():
 
 		plt.subplot(grid[0:2,0])
 		plt.title("Grating Profiles")
-		plt.plot(np.arange(0,self.N_seg),self.apod_profile/1000)
+		plt.plot(self.apod_profile/1000,".-")
 		plt.xticks([])
 		plt.ylabel("Coupling (/mm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 		plt.text(self.N_seg/2,self.kappa/4/1000,"a = "+str(self.a),ha="center")
 
 		plt.subplot(grid[2:4,0])
-		plt.plot(self.period_profile*1e9)
+		plt.plot(self.period_profile*1e9,".-")
 		plt.xticks([])
 		plt.ylabel("Pitch (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 
 		plt.subplot(grid[4,0])
-		plt.plot(self.N/self.N_seg*np.arange(0,self.w1_profile.size),self.w1_profile*1e9,label="wg 1")
+		plt.plot(self.N/self.N_seg*np.arange(0,self.w1_profile.size),self.w1_profile*1e9,".-",label="wg 1")
 		plt.ylabel("w1 (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 		plt.xticks([])
 
 		plt.subplot(grid[5,0])
-		plt.plot(self.N/self.N_seg*np.arange(0,self.w2_profile.size),self.w2_profile*1e9,label="wg 2")
+		plt.plot(self.N/self.N_seg*np.arange(0,self.w2_profile.size),self.w2_profile*1e9,".-",label="wg 2")
 		plt.xlabel("Period Along Grating")
 		plt.ylabel("w2 (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)	
