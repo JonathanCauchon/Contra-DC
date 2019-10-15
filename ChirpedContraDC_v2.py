@@ -356,6 +356,22 @@ class ChirpedContraDC():
 			plt.title("Width Chirp Profile")
 			plt.show()
 
+
+	# a new chirping technique: constant sides for better squareness
+	def chirpV2(self, frac=1/4):
+		# period
+		p1 = self.period[0]*np.ones(int(self.N_seg*frac))
+		p2 = np.linspace(self.period[0], self.period[1], int(self.N_seg*(1-2*frac)))
+		p2 = np.round(p2/2,9)*2
+		p3 = self.period[1]*np.ones(int(self.N_seg*frac))
+
+		p1=np.append(p1,p2)
+		p1=np.append(p1,p3)
+		while p1.size < self.N_seg:
+			p1=np.append(p1,self.period[1])
+
+		self.period_profile = p1
+
 	# end section on chirp
 	# --------------\
 
@@ -487,7 +503,7 @@ class ChirpedContraDC():
 					drop, thru = drop1, thru1
 
 				self.thru = self.thru + thru
-				self.E_Drop = self.drop + drop
+				self.drop = self.drop + drop
 			self.flipProfiles() # Return to original one
 
 	def simulate(self, bar=True):
@@ -519,25 +535,23 @@ class ChirpedContraDC():
 			smoothness = -1
 
 			self.performance = \
-				[("Reflection Wavelength" , np.round(ref_wvl*1e9,1)           ,  "nm"), \
-				("Bandwidth"              , np.round(bandwidth*1e9,1)  ,  "nm"), \
-				("Max Reflection"         , np.round(dropMax,2)          ,  "dB"), \
-				("Average Reflection"     , np.round(avg,2)              ,  "dB"), \
-				("Standard Deviation"     , np.round(std,2)              ,  "dB"), \
-				("Exctinction Ratio"      , np.round(ER,1)               ,  "dB"), \
-				("Smoothness"             , np.round(smoothness)       ,  " " )]
+				[("Ref. Wvl" , np.round(ref_wvl*1e9,1)           ,  "nm"), \
+				("BW"              , np.round(bandwidth*1e9,1)  ,  "nm"), \
+				("Max Ref."         , np.round(dropMax,2)          ,  "dB"), \
+				("Avg Ref."     , np.round(avg,2)              ,  "dB"), \
+				("Std Dev."     , np.round(std,2)              ,  "dB")] \
+				# ("Exctinction Ratio"      , np.round(ER,1)               ,  "dB"), \
+				# ("Smoothness"             , np.round(smoothness)       ,  " " )]
 
 
 	# Display Plots and figures of merit 
-	def displayResults(self):
+	def displayResults(self, advanced=False):
 
-		clc()
-		print("Displaying results.")
+		# clc()
+		# print("Displaying results.")
 
 		self.getPerformance()
 
-		x = np.linspace(0, 2*np.pi, 400)
-		y = np.sin(x**2)
 
 		fig = plt.figure(figsize=(9,6))
 		grid = plt.GridSpec(6,3)
@@ -569,13 +583,27 @@ class ChirpedContraDC():
 		plt.tick_params(axis='y', direction="in", right=True)	
 
 
-		plt.subplot(grid[0:2,1:])
-		plt.title("Filter Performance")
+		plt.subplot(grid[0:2,1])
+		plt.title("Specifications")
+		numElems = 6
+		plt.axis([0,1,-numElems+1,1])
+		plt.text(0.5,-0,"N : " + str(self.N),fontsize=11,ha="center",va="bottom")
+		plt.text(0.5,-1,"N_seg : " + str(self.N_seg),fontsize=11,ha="center",va="bottom")
+		plt.text(0.5,-2,"a : " + str(self.a),fontsize=11,ha="center",va="bottom")
+		plt.text(0.5,-3,"p: " + str(self.period)+" m",fontsize=11,ha="center",va="bottom")
+		plt.text(0.5,-4,"w1 : " + str(self.w1)+" m",fontsize=11,ha="center",va="bottom")
+		plt.text(0.5,-5,"w2 : " + str(self.w2)+" m",fontsize=11,ha="center",va="bottom")
+		plt.xticks([])
+		plt.yticks([])
+
+
+		plt.subplot(grid[0:2,2])
+		plt.title("Performance")
 		numElems = np.size(self.performance)/3
 		plt.axis([0,1,-numElems+1,1])
-		for i in np.arange(0,7):
-			plt.text(0.6,-i,self.performance[i][0]+" : ",fontsize=11,ha="right",va="bottom")
-			plt.text(0.6,-i,str(self.performance[i][1])+" "+self.performance[i][2],fontsize=11,ha="left",va="bottom")
+		for i in np.arange(0,5):
+			plt.text(0.5,-i,self.performance[i][0]+" : ",fontsize=11,ha="right",va="bottom")
+			plt.text(0.5,-i,str(self.performance[i][1])+" "+self.performance[i][2],fontsize=11,ha="left",va="bottom")
 		plt.xticks([])
 		plt.yticks([])
 
@@ -590,4 +618,5 @@ class ChirpedContraDC():
 		plt.tick_params(axis='x', top=True)
 
 		plt.show()
-		clc()
+
+

@@ -158,43 +158,134 @@ HOF.append(ChirpedContraDC(N_seg=10, a=1,resolution=100, N=2400, wvl_range=[1490
 HOF.append(ChirpedContraDC(N_seg=20, a=1,resolution=100, N=2145, wvl_range=[1490e-9,1640e-9],target_wvl=[1540e-9,1580e-9]))
 
 N_seg = 100
-frac = 1/4
-# period
-p = [312e-9, 324e-9]
-p1 = p[0]*np.ones(int(N_seg*frac))
-p2 = np.linspace(p[0], p[1], int(N_seg*(1-2*frac)))
-p2 = np.round(p2/2,9)*2
-p3 = p[1]*np.ones(int(N_seg*frac))
-
-p1=np.append(p1,p2)
-p1=np.append(p1,p3)
-p1=np.append(p1,p[1])
-print(p1)
-
-
-# N_seg = 50
 # frac = 1/4
-# N_c = int(N_seg*(1-2*frac))
-# N_ = int(N_seg*frac)
+# # period
+p = [312e-9, 324e-9]
+# p1 = p[0]*np.ones(int(N_seg*frac))
+# p2 = np.linspace(p[0], p[1], int(N_seg*(1-2*frac)))
+# p2 = np.round(p2/2,9)*2
+# p3 = p[1]*np.ones(int(N_seg*frac))
 
-d = ChirpedContraDC(stages=3, N_seg=N_seg, a=1,resolution=100, N=2100, wvl_range=[1400e-9,1700e-9])
-d.getApodProfile()
-d.getChirpProfile()
-d.period_profile = p1
-while d.period_profile.size < N_seg:
-	d.period_profile = np.append(d.period_profile, p2[0])
-d.getPropConstants(True)
-d.propagate(True)
-d.cascade()
+# p1=np.append(p1,p2)
+# p1=np.append(p1,p3)
+# p1=np.append(p1,p[1])
+# print(p1)
+
+def test(d):
+	d.wvl_range = [1500e-9,1600e-9]
+	d.a = 1
+	d.resolution = 150
+	d.stages = 2
+	d.getApodProfile()
+	d.getChirpProfile()
+	d.chirpV2()
+	d.getPropConstants(True)
+	d.propagate(True)
+	d.cascade()
+	d.displayResults()
+
+
+N_seg = 100
+p = [314e-9, 322e-9]
+
+d = ChirpedContraDC(period=p, N_seg=N_seg, a=1,resolution=150, N=1200, wvl_range=[1400e-9,1700e-9])
+# 1200, 
+# nums = np.linspace(1200, 2000, 50)
+# for N in nums:
+# 	d.N = N
+# 	test(d)
+
+# test(d)
+
+MVP = [ChirpedContraDC(period=[312e-9, 324e-9], N_seg=50, a=1, N=2100)]
+MVP.append(ChirpedContraDC(period=[316e-9, 322e-9], N_seg=50, a=1, N=1000))
+MVP.append(ChirpedContraDC(period=[314e-9, 322e-9], N_seg=50, a=1, N=1200))
+
+# test(MVP[-1])
+
+
+
+# Broadening 
+p = [318e-9, 318e-9]
+N_seg = 100
+devices = [ ChirpedContraDC(a=1,period=[318e-9, 318e-9], N_seg=N_seg, N=1000), \
+			ChirpedContraDC(a=1,period=[316e-9, 320e-9], N_seg=N_seg, N=800), \
+			ChirpedContraDC(a=1,period=[314e-9, 322e-9], N_seg=N_seg, N=1450), \
+			ChirpedContraDC(a=1, period=[312e-9, 324e-9], N_seg=N_seg, N=2100), \
+			ChirpedContraDC(a=1,period=[310e-9, 326e-9], N_seg=N_seg, N=2750) ]
+
+
+
+
+
+saveFigs = True
+
+
+thru = []
+drop = []
+# for d in devices:
+# 	d.wvl_range = [1450e-9,1650e-9]
+# 	# d.resolution = 10
+# 	# d.stages = 1
+# 	d.getApodProfile()
+# 	d.getChirpProfile()
+# 	d.chirpV2()
+# 	d.getPropConstants(True)
+# 	d.propagate(True)
+# 	d.cascade()
+# 	d.getPerformance()
+
+# plt.figure()
+# plt.axis((d.wavelength[0]*1e9, d.wavelength[-1]*1e9, -40, 5))
+# for d in devices:
+# 	plt.plot(d.wavelength*1e9, d.drop, label="BW: "+str(d.performance[1][1])+"nm")
+# plt.legend()
+# plt.xlabel("Wavelength (nm)")
+# plt.ylabel("Drop Response (dB)")
+# if saveFigs:
+# 	plt.savefig("Plots/Drop Spectral Broadening.pdf")
+
+# plt.figure()
+# for d in devices:
+# 	plt.plot(d.wavelength*1e9, d.thru)
+# plt.xlabel("Wavelength (nm)")
+# plt.ylabel("Thru Response (dB)")
+# if saveFigs:
+# 	plt.savefig("Plots/Thru Spectral Broadening.pdf")
+
+# Cascaded devices
+# for d in devices:
+# 	d.wvl_range = [1460e-9,1650e-9]
+# 	# d.resolution = 100
+# 	d.stages = 2
+# 	d.getApodProfile()
+# 	d.getChirpProfile()
+# 	d.chirpV2()
+# 	d.getPropConstants(True)
+# 	d.propagate(True)
+# 	d.cascade()
+# 	d.getPerformance()
+
+# plt.figure()
+# plt.axis((d.wavelength[0]*1e9, d.wavelength[-1]*1e9, -75, 5))
+# for d in devices:
+# 	plt.plot(d.wavelength*1e9, d.drop, label="BW: "+str(d.performance[1][1])+"nm")
+# plt.legend()
+# plt.xlabel("Wavelength (nm)")
+# plt.ylabel("Cascaded Drop Response (dB)")
+# if saveFigs:
+# 	plt.savefig("Cascaded Drop Spectral Broadening.pdf")
+
+
+
+# plt.show()
+
+# new results interface tests
+d = ChirpedContraDC(resolution=10, period = [320e-9,322e-9])
+d.simulate()
 d.displayResults()
 
 
-# thru = 10*np.log10(np.abs(d.E_Drop[0,:])**2)
-# wvl = d.wavelength
-
-# plt.figure()
-# plt.plot(wvl*1e9, 1*thru)
-# plt.show()
 
 
 
