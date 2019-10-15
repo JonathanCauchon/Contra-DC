@@ -177,7 +177,7 @@ print(p1)
 # N_c = int(N_seg*(1-2*frac))
 # N_ = int(N_seg*frac)
 
-d = ChirpedContraDC(N_seg=N_seg, a=1,resolution=300, N=2100, wvl_range=[1400e-9,1700e-9])
+d = ChirpedContraDC(stages=3, N_seg=N_seg, a=1,resolution=100, N=2100, wvl_range=[1400e-9,1700e-9])
 d.getApodProfile()
 d.getChirpProfile()
 d.period_profile = p1
@@ -185,15 +185,16 @@ while d.period_profile.size < N_seg:
 	d.period_profile = np.append(d.period_profile, p2[0])
 d.getPropConstants(True)
 d.propagate(True)
-# d.displayResults()
+d.cascade()
+d.displayResults()
 
 
-thru = 10*np.log10(np.abs(d.E_Drop[0,:])**2)
-wvl = d.wavelength
+# thru = 10*np.log10(np.abs(d.E_Drop[0,:])**2)
+# wvl = d.wavelength
 
-plt.figure()
-plt.plot(wvl*1e9, 3*thru)
-plt.show()
+# plt.figure()
+# plt.plot(wvl*1e9, 1*thru)
+# plt.show()
 
 
 

@@ -461,8 +461,12 @@ class ChirpedContraDC():
 			E_Drop[0,ii] = mode_kappa_b1*R_co[0,ii] + mode_kappa_b2*R[0,ii]
 
 		# return results
-		self.E_Thru = E_Thru
-		self.E_Drop = E_Drop
+		self.E_thru = E_Thru
+		self.thru = 10*np.log10(np.abs(self.E_thru[0,:])**2)
+
+		self.E_drop = E_Drop
+		self.drop = 10*np.log10(np.abs(self.E_drop[0,:])**2)
+
 		self.TransferMatrix = LeftRightTransferMatrix
 
 	def flipProfiles(self): # flips the cdc
@@ -472,19 +476,19 @@ class ChirpedContraDC():
 
 	def cascade(self):
 		if self.stages > 1:
-			thru1, drop1 = self.E_Thru, self.E_Drop
+			thru1, drop1 = self.thru, self.drop
 			self.flipProfiles()
-			self.propagate()
-			thru2, drop2 = self.E_Thru, self.E_Drop
+			self.propagate(True)
+			thru2, drop2 = self.thru, self.drop
 			for _ in range(self.stages):
 				if _%2 == 0:
 					drop, thru = drop2, thru2
 				else:
 					drop, thru = drop1, thru1
 
-				self.E_Thru = self.E_Thru*thru
-				self.E_Drop = self.E_Drop*drop
-			self.flipProfiles() # To keep the original one
+				self.thru = self.thru + thru
+				self.E_Drop = self.drop + drop
+			self.flipProfiles() # Return to original one
 
 	def simulate(self, bar=True):
 		self.getApodProfile()
@@ -494,9 +498,7 @@ class ChirpedContraDC():
 		self.cascade()
 
 	def getPerformance(self):
-		if self.E_Thru is not None:
-			self.thru = 10*np.log10(np.abs(self.E_Thru[0,:])**2)
-			self.drop = 10*np.log10(np.abs(self.E_Drop[0,:])**2)
+		if self.E_thru is not None:
 
 			# bandwidth and centre wavelength
 			dropMax = max(self.drop)
@@ -533,8 +535,6 @@ class ChirpedContraDC():
 		print("Displaying results.")
 
 		self.getPerformance()
-		thruAmplitude = 10*np.log10(np.abs(self.E_Thru[0,:])**2)
-		dropAmplitude = 10*np.log10(np.abs(self.E_Drop[0,:])**2)
 
 		x = np.linspace(0, 2*np.pi, 400)
 		y = np.sin(x**2)
@@ -580,8 +580,8 @@ class ChirpedContraDC():
 		plt.yticks([])
 
 		plt.subplot(grid[2:,1:])
-		plt.plot(self.wavelength*1e9,thruAmplitude,label="Thru port")
-		plt.plot(self.wavelength*1e9,dropAmplitude,label="Drop port")
+		plt.plot(self.wavelength*1e9, self.thru, label="Thru port")
+		plt.plot(self.wavelength*1e9, self.drop, label="Drop port")
 		plt.legend()
 		plt.xlabel("Wavelength (nm)")
 		plt.ylabel("Response (dB)")
