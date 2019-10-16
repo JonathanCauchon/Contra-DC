@@ -595,6 +595,7 @@ class ChirpedContraDC():
 		plt.text(0.5,-5,"w2 : " + str(self.w2)+" m",fontsize=11,ha="center",va="bottom")
 		plt.xticks([])
 		plt.yticks([])
+		plt.box(False)
 
 
 		plt.subplot(grid[0:2,2])
@@ -606,7 +607,9 @@ class ChirpedContraDC():
 			plt.text(0.5,-i,str(self.performance[i][1])+" "+self.performance[i][2],fontsize=11,ha="left",va="bottom")
 		plt.xticks([])
 		plt.yticks([])
+		plt.box(False)
 
+		
 		plt.subplot(grid[2:,1:])
 		plt.plot(self.wavelength*1e9, self.thru, label="Thru port")
 		plt.plot(self.wavelength*1e9, self.drop, label="Drop port")
@@ -616,6 +619,7 @@ class ChirpedContraDC():
 		plt.tick_params(axis='y', which='both', labelleft=False, labelright=True, \
 						direction="in", right=True)
 		plt.tick_params(axis='x', top=True)
+
 
 		plt.show()
 
