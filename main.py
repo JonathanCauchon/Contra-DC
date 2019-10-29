@@ -281,11 +281,15 @@ drop = []
 # plt.show()
 
 # new results interface tests
-d = ChirpedContraDC(resolution=10, period = [320e-9,322e-9])
-d.simulate()
+d = ChirpedContraDC(a=1, N=400, resolution=100, period = [320e-9], w1=[.55e-6, .57e-6], w2=[.43e-6,.45e-6])
+d.getApodProfile()
+d.getChirpProfile()
+d.chirpV2()
+d.getPropConstants(False)
+d.propagate(True)
+d.cascade()
+d.getPerformance()
 d.displayResults()
-
-
 
 
 

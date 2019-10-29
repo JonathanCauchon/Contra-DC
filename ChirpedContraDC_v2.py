@@ -361,16 +361,43 @@ class ChirpedContraDC():
 	def chirpV2(self, frac=1/4):
 		# period
 		p1 = self.period[0]*np.ones(int(self.N_seg*frac))
-		p2 = np.linspace(self.period[0], self.period[1], int(self.N_seg*(1-2*frac)))
+		p2 = np.linspace(self.period[0], self.period[-1], int(self.N_seg*(1-2*frac)))
 		p2 = np.round(p2/2,9)*2
-		p3 = self.period[1]*np.ones(int(self.N_seg*frac))
+		p3 = self.period[-1]*np.ones(int(self.N_seg*frac))
 
 		p1=np.append(p1,p2)
 		p1=np.append(p1,p3)
 		while p1.size < self.N_seg:
-			p1=np.append(p1,self.period[1])
+			p1=np.append(p1,self.period[-1])
 
 		self.period_profile = p1
+
+
+		w1 = self.w1[0]*np.ones(int(self.N_seg*frac))
+		w2 = np.linspace(self.w1[0], self.w1[-1], int(self.N_seg*(1-2*frac)))
+		w2 = np.round(w2,9)
+		w3 = self.w1[-1]*np.ones(int(self.N_seg*frac))
+
+		w1=np.append(w1,w2)
+		w1=np.append(w1,w3)
+		while w1.size < self.N_seg:
+			w1=np.append(w1,self.w1[-1])
+
+		self.w1_profile = w1
+	
+
+		w1 = self.w2[0]*np.ones(int(self.N_seg*frac))
+		w2 = np.linspace(self.w2[0], self.w2[-1], int(self.N_seg*(1-2*frac)))
+		w2 = np.round(w2,9)
+		w3 = self.w2[-1]*np.ones(int(self.N_seg*frac))
+
+		w1=np.append(w1,w2)
+		w1=np.append(w1,w3)
+		while w1.size < self.N_seg:
+			w1=np.append(w1,self.w2[-1])
+
+		self.w2_profile = w1
+		print(w1)
 
 	# end section on chirp
 	# --------------\
