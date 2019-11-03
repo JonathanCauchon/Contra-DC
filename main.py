@@ -214,10 +214,6 @@ devices = [ ChirpedContraDC(a=1,period=[318e-9, 318e-9], N_seg=N_seg, N=1000), \
 			ChirpedContraDC(a=1, period=[312e-9, 324e-9], N_seg=N_seg, N=2100), \
 			ChirpedContraDC(a=1,period=[310e-9, 326e-9], N_seg=N_seg, N=2750) ]
 
-
-
-
-
 saveFigs = True
 
 
@@ -280,16 +276,72 @@ drop = []
 
 # plt.show()
 
-# new results interface tests
-d = ChirpedContraDC(a=1, N=400, resolution=100, period = [320e-9], w1=[.55e-6, .57e-6], w2=[.43e-6,.45e-6])
-d.getApodProfile()
-d.getChirpProfile()
-d.chirpV2()
-d.getPropConstants(False)
-d.propagate(True)
-d.cascade()
-d.getPerformance()
-d.displayResults()
+# d = devices[-1]
+# d.wvl_range = [1450e-9, 1650e-9]
+# d.resolution = 100
+# d.N = 10000
+# d.simulate()
+# d.displayResults
+
+dev = ChirpedContraDC(a=0, target_wvl=[1550e-9, 1580e-9], resolution=100, N_seg=5, wvl_range=[1535e-9, 1595e-9])
+# dev.simulate()
+# dev.displayResults()
+
+Ns = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700]
+
+# for N in Ns:
+# 	dev.N = N
+# 	dev.propagate(False)
+# 	dev.displayResults()
+# dev.N = 1300
+# dev.N_seg = 7
+# dev.stages = 2
+# dev.simulate()
+# dev.displayResults()
+
+# ------- Optimizing this shit
+N_segs = np.arange(2, 10, 3)
+Ns = np.arange(300,1000,300)
+
+
+# desired specs
+suppression_ratio = 0
+target_drop = np.ones(dev.resolution)
+target_drop[dev.wavelength < dev.target_wvl[0]] = suppression_ratio
+target_drop[dev.wavelength > dev.target_wvl[-1]] = suppression_ratio
+
+# plt.plot(dev.wavelength*1e9, target_drop)
+# plt.plot(dev.wavelength*1e9, dev.drop)
+# plt.show()
+
+def findRMS(predictions, targets):
+	return np.sqrt(((predictions - targets) ** 2).mean())
+
+rms = np.zeros((N_segs.size, Ns.size))
+
+for i, N_seg in enumerate(N_segs):
+	for j, N in enumerate(Ns):
+		dev.N_seg, dev.N = N_seg, N
+		dev.simulate()
+		rms[i, j] = findRMS(target_drop, np.exp(dev.drop/10))
+		# plt.figure()
+		# plt.plot(dev.wavelength*1e9, target_drop)
+		# plt.plot(dev.wavelength*1e9, dev.drop)
+
+
+print(rms)
+
+plt.figure()
+plt.contourf(Ns, N_segs, rms)
+plt.ylabel("N_segs")
+plt.xlabel("N")
+cbar = plt.colorbar()
+cbar.set_label("RMSE")
+plt.show()
+
+
+# -------
+
 
 
 

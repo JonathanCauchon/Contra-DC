@@ -195,20 +195,23 @@ class ChirpedContraDC():
 		n_apodization=np.arange(self.N_seg)+0.5
 		zaxis = (np.arange(self.N_seg))*l_seg
 
-		if  self.a != 0:
-		    kappa_apodG = np.exp(-self.a*((n_apodization)-0.5*self.N_seg)**2/self.N_seg**2)
-		    ApoFunc = kappa_apodG
+		if self.a == 0:
+			self.apod_profile = self.kappa*np.ones(self.N_seg)
 
-		profile = (ApoFunc-min(ApoFunc))/(max(ApoFunc)-(min(ApoFunc))) # normalizes the profile
+		else:
+			kappa_apodG = np.exp(-self.a*((n_apodization)-0.5*self.N_seg)**2/self.N_seg**2)
+			ApoFunc = kappa_apodG
 
-		n_profile = np.linspace(0,self.N_seg,profile.size)
-		profile = np.interp(n_apodization, n_profile, profile)
-		    
-		kappaMin = self.kappa*profile[0]
-		kappaMax = self.kappa
-		kappa_apod=kappaMin+(kappaMax-kappaMin)*profile
+			profile = (ApoFunc-min(ApoFunc))/(max(ApoFunc)-(min(ApoFunc))) # normalizes the profile
 
-		self.apod_profile = kappa_apod
+			n_profile = np.linspace(0,self.N_seg,profile.size)
+			profile = np.interp(n_apodization, n_profile, profile)
+			    
+			kappaMin = self.kappa*profile[0]
+			kappaMax = self.kappa
+			kappa_apod=kappaMin+(kappaMax-kappaMin)*profile
+
+			self.apod_profile = kappa_apod
 
 	# --------------/
 	# Section relative to chirp and chirp optimization
@@ -362,7 +365,7 @@ class ChirpedContraDC():
 		# period
 		p1 = self.period[0]*np.ones(int(self.N_seg*frac))
 		p2 = np.linspace(self.period[0], self.period[-1], int(self.N_seg*(1-2*frac)))
-		p2 = np.round(p2/2,9)*2
+		p2 = np.round(p2/self.period_chirp_step/1e9,9)*self.period_chirp_step*1e9
 		p3 = self.period[-1]*np.ones(int(self.N_seg*frac))
 
 		p1=np.append(p1,p2)
@@ -397,7 +400,11 @@ class ChirpedContraDC():
 			w1=np.append(w1,self.w2[-1])
 
 		self.w2_profile = w1
-		print(w1)
+
+		# if self.T is list:
+		# 	self.T_profile = np.linspace(self.T[0], self.T[-1], self.N_seg)
+		# else:
+		# 	self.T_profile = self.T*np.ones(self.N_seg)
 
 	# end section on chirp
 	# --------------\
