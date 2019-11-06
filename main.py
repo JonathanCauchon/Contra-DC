@@ -300,8 +300,8 @@ Ns = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400,
 # dev.displayResults()
 
 # ------- Optimizing this shit
-N_segs = np.arange(2, 10, 3)
-Ns = np.arange(300,1000,300)
+N_segs = np.arange(1, 25, 1)
+Ns = np.arange(100, 3000, 100)
 
 
 # desired specs
@@ -319,14 +319,25 @@ def findRMS(predictions, targets):
 
 rms = np.zeros((N_segs.size, Ns.size))
 
-for i, N_seg in enumerate(N_segs):
-	for j, N in enumerate(Ns):
-		dev.N_seg, dev.N = N_seg, N
-		dev.simulate()
-		rms[i, j] = findRMS(target_drop, np.exp(dev.drop/10))
-		# plt.figure()
-		# plt.plot(dev.wavelength*1e9, target_drop)
-		# plt.plot(dev.wavelength*1e9, dev.drop)
+dev.N_seg=5
+dev.N=600
+# dev.stages = 5
+dev.simulate()
+dev.displayResults()
+
+# for i, N_seg in enumerate(N_segs):
+# 	dev.N_seg = N_seg
+# 	dev.simulate()
+# 	for j, N in enumerate(Ns):
+# 		dev.N = N
+# 		dev.propagate(True)
+# 		rms[i, j] = findRMS(target_drop, np.exp(dev.drop/10))
+
+
+
+# 		# plt.figure()
+# 		# plt.plot(dev.wavelength*1e9, target_drop)
+# 		# plt.plot(dev.wavelength*1e9, dev.drop)
 
 
 print(rms)
