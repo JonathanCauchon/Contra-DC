@@ -325,19 +325,6 @@ dev.N=600
 dev.simulate()
 dev.displayResults()
 
-# for i, N_seg in enumerate(N_segs):
-# 	dev.N_seg = N_seg
-# 	dev.simulate()
-# 	for j, N in enumerate(Ns):
-# 		dev.N = N
-# 		dev.propagate(True)
-# 		rms[i, j] = findRMS(target_drop, np.exp(dev.drop/10))
-
-
-
-# 		# plt.figure()
-# 		# plt.plot(dev.wavelength*1e9, target_drop)
-# 		# plt.plot(dev.wavelength*1e9, dev.drop)
 
 
 print(rms)

@@ -291,27 +291,67 @@ class ChirpedContraDC():
 			return dummy.period, dummy.w1[0], dummy.w2[0]
 
 
+	# ---/ Section on chirp
+
+	def chirpIsKnown(self):
+
+		ID = str(self.N_seg) + "_"  \
+		+str(int(self.target_wvl[0]*1e9)) \
+			+ "_" + str(int(self.target_wvl[-1]*1e9))
+
+		if os.path.exists("Database/Chirp_profiles/"+ID+".txt"):
+			return True
+
+		else:
+			return False
+
+
+	def saveChirp(self):	
+
+		ID = str(self.N_seg) + "_"  \
+			+str(int(self.target_wvl[0]*1e9)) \
+			+ "_" + str(int(self.target_wvl[-1]*1e9))
+
+		with open("Database/Chirp_profiles/"+ID+".txt", "w") as file:
+			np.savetxt(file, (self.period_profile, self.w1_profile, self.w2_profile))
+
+
+	def fetchChirp(self):
+
+		ID = str(self.N_seg) + "_"  \
+		+str(int(self.target_wvl[0]*1e9)) \
+		+ "_" + str(int(self.target_wvl[-1]*1e9))
+
+		self.period_profile, self.w1_profile, self.w2_profile = np.loadtxt("Database/Chirp_profiles/"+ID+".txt")
+
+
 	# This finds the best chirp profile to smoothly scan reflection wavelengths
 	def optimizeChirp(self, start_wvl, end_wvl, bar=True):
-		
-		ref_wvl = np.linspace(start_wvl, end_wvl, self.N_seg)
-		self.period_profile = np.zeros(self.N_seg)
-		self.w1_profile = np.zeros(self.N_seg)
-		self.w2_profile = np.zeros(self.N_seg)
 
-		if bar:
-			progressbar_width = self.N_seg
-			self.printProgressBar(0, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
-			i=0
+		if self.chirpIsKnown():
+			self.fetchChirp()
 
-		for n in range(self.N_seg):
-			self.period_profile[n], self.w1_profile[n], self.w2_profile[n] = self.optimizeParams(ref_wvl[n])
+		else:
+			ref_wvl = np.linspace(start_wvl, end_wvl, self.N_seg)
+			self.period_profile = np.zeros(self.N_seg)
+			self.w1_profile = np.zeros(self.N_seg)
+			self.w2_profile = np.zeros(self.N_seg)
 
 			if bar:
-				i += 1
-				clc()
-				print("Optimizing chirp profile...")
-				self.printProgressBar(i, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
+				progressbar_width = self.N_seg
+				self.printProgressBar(0, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
+				i=0
+
+			for n in range(self.N_seg):
+				self.period_profile[n], self.w1_profile[n], self.w2_profile[n] = self.optimizeParams(ref_wvl[n])
+
+				if bar:
+					i += 1
+					clc()
+					print("Optimizing chirp profile...")
+					self.printProgressBar(i, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
+
+			self.saveChirp()
 
 
 	def getChirpProfile(self, plot=False):
