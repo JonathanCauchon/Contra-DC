@@ -63,6 +63,13 @@ class ChirpedContraDC():
 		self.period_chirp_step = 2e-9 # To comply with GDS resolution
 		self.w_chirp_step = 1e-9
 
+		# Properties that will be set through methods
+		self.apod_profile = None
+		self.period_profile = None
+		self.w1_profile = None
+		self.w2_profile = None
+
+		self.z_seg = np.linspace(0,self.N*self.period, self.N_seg)
 
 		# Protecting the model against user-induced inconsistancies
 		# Gives warnings, errors, makes corrections
@@ -446,6 +453,16 @@ class ChirpedContraDC():
 		# else:
 		# 	self.T_profile = self.T*np.ones(self.N_seg)
 
+		# get optimal period, w1 and w2 from saved database
+
+
+	def fetchParams(self, wvl):
+		wavelength, period, w1, w2 = np.transpose(np.loadtxt("Database/Target_wavelengths.txt"))
+		idx = (np.abs(wavelength - wvl)).argmin()
+
+		return period[idx], w1[idx], w2[idx]
+
+
 	# end section on chirp
 	# --------------\
 
@@ -464,7 +481,8 @@ class ChirpedContraDC():
 		TopDownTransferMatrix = np.zeros((4,4,self.resolution),dtype=complex)
 		InOutTransferMatrix = np.zeros((4,4,self.resolution),dtype=complex)
 
-		kappa_apod = self.getApodProfile()
+		# kappa_apod = self.getApodProfile()
+		kappa_apod = self.apod_profile
 
 		mode_kappa_a1=1
 		mode_kappa_a2=0 #no initial cross coupling
@@ -580,9 +598,44 @@ class ChirpedContraDC():
 				self.drop = self.drop + drop
 			self.flipProfiles() # Return to original one
 
+
+	# Add two CDCs to make chirped device
+	def __add__(cdc1, cdc2):
+		if isinstance(cdc2, ChirpedContraDC):
+
+			cdc3 = copy.copy(cdc1)
+
+			if cdc1.apod_profile is None:
+				cdc1.getApodProfile()
+			if cdc2.apod_profile is None:
+				cdc2.getApodProfile()
+			if cdc1.period_profile is None:
+				cdc1.getChirpProfile()
+			if cdc2.period_profile is None:
+				cdc2.getChirpProfile()
+
+			cdc3.apod_profile = np.append(cdc1.apod_profile, cdc2.apod_profile)
+			cdc3.period_profile = np.append(cdc1.period_profile, cdc2.period_profile)
+			cdc3.w1_profile = np.append(cdc1.w1_profile, cdc2.w1_profile)
+			cdc3.w2_profile = np.append(cdc1.w2_profile, cdc2.w2_profile)
+			cdc3.N += cdc2.N
+			cdc3.N_seg += cdc2.N_seg
+			cdc3.z_seg = np.append(cdc1.z_seg, cdc2.z_seg+cdc1.z_seg[-1]+(cdc2.z_seg[1]-cdc2.z_seg[0]))
+
+			return cdc3
+
+		else:
+			print("Error: Addition has to be between two ChirpedContraDC objects.")
+
+
+
 	def simulate(self, bar=True):
-		self.getApodProfile()
-		self.getChirpProfile()
+		if self.apod_profile is None:
+			self.getApodProfile()
+
+		if self.period_profile is None:
+			self.getChirpProfile()
+
 		self.getPropConstants(bar)
 		self.propagate(bar)
 		self.cascade()
@@ -632,27 +685,27 @@ class ChirpedContraDC():
 
 		plt.subplot(grid[0:2,0])
 		plt.title("Grating Profiles")
-		plt.plot(self.apod_profile/1000,".-")
+		plt.plot(self.z_seg, self.apod_profile/1000,".-")
 		plt.xticks([])
 		plt.ylabel("Coupling (/mm)")
 		plt.tick_params(axis='y', direction="in", right=True)
-		plt.text(self.N_seg/2,self.kappa/4/1000,"a = "+str(self.a),ha="center")
+		# plt.text(self.N_seg/2,self.kappa/4/1000,"a = "+str(self.a),ha="center")
 
 		plt.subplot(grid[2:4,0])
-		plt.plot(self.period_profile*1e9,".-")
+		plt.plot(self.z_seg, self.period_profile*1e9,".-")
 		plt.xticks([])
 		plt.ylabel("Pitch (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 
 		plt.subplot(grid[4,0])
-		plt.plot(self.N/self.N_seg*np.arange(0,self.w1_profile.size),self.w1_profile*1e9,".-",label="wg 1")
+		plt.plot(self.z_seg, self.w1_profile*1e9,".-",label="wg 1")
 		plt.ylabel("w1 (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 		plt.xticks([])
 
 		plt.subplot(grid[5,0])
-		plt.plot(self.N/self.N_seg*np.arange(0,self.w2_profile.size),self.w2_profile*1e9,".-",label="wg 2")
-		plt.xlabel("Period Along Grating")
+		plt.plot(self.z_seg*1e6, self.w2_profile*1e9,".-",label="wg 2")
+		plt.xlabel("z (um)")
 		plt.ylabel("w2 (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)	
 
