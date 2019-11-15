@@ -577,10 +577,12 @@ class ChirpedContraDC():
 
 		self.TransferMatrix = LeftRightTransferMatrix
 
+
 	def flipProfiles(self): # flips the cdc
 			self.beta1_profile = np.flip(self.beta1_profile)
 			self.beta2_profile = np.flip(self.beta2_profile)
 			self.period_profile = np.flip(self.period_profile)
+
 
 	def cascade(self):
 		if self.stages > 1:

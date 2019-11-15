@@ -84,54 +84,91 @@ def plotApod():
 N1 = 500
 N2 = 350
 numIntra = 8
-target_wvl = [1550e-9, 1610e-9]
-
-# find bandwidths
-dummy = ChirpedContraDC(resolution=100)
-
-dummy.N = N1
-dummy.simulate()
-dummy.getPerformance()
-BW1 = dummy.performance[1][1]*1e-9
-
-dummy.N = N2
-dummy.simulate()
-dummy.getPerformance()
-BW2 = dummy.performance[1][1]*1e-9
-
-# extremities
-d_0 = ChirpedContraDC(N=N1)
-d_0.period, d_0.w1, d_0.w2 = dummy.optimizeParams(target_wvl[0]+BW1/2)
-d_end = copy.copy(d_0)
-d_end.period, d_end.w1, d_end.w2 = dummy.optimizeParams(target_wvl[-1]-BW1/2)
-
-# center
-wvls = np.linspace(target_wvl[0],target_wvl[-1], numIntra+2)
-middle_wvls = wvls[1:-1]
-
-middle_devices = []
-for wvl in middle_wvls:
-	print(wvl)
-	device = ChirpedContraDC(N=N2)
-	device.period, device.w1, device.w2 = device.optimizeParams(wvl)
-	middle_devices.append(device)
-
-print(middle_devices)
-
-d_middle = middle_devices[0]
-for i in range(len(middle_devices)-1):
-	d_middle = d_middle + middle_devices[i+1]
+target_wvl = [1610e-9, 1550e-9]
 
 
-device = d_0 + d_middle + d_end
-device.wvl_range = [1500e-9, 1650e-9]
-device.resolution = 100
-device.simulate()
-device.displayResults()
+def autoDesign(N1, N2, target_wvl):
+	# find bandwidths
+	dummy = ChirpedContraDC(resolution=100)
+
+	dummy.N = N1
+	dummy.simulate()
+	dummy.getPerformance()
+	BW1 = dummy.performance[1][1]*1e-9
+
+	dummy.N = N2
+	dummy.simulate()
+	dummy.getPerformance()
+	BW2 = dummy.performance[1][1]*1e-9
+
+	# extremities
+	d_0 = ChirpedContraDC(N=N1)
+	d_end = copy.copy(d_0)
+
+	if target_wvl[-1] > target_wvl[0]:
+		d_0.period, d_0.w1, d_0.w2 = dummy.optimizeParams(target_wvl[0]+BW1/2)
+		d_end.period, d_end.w1, d_end.w2 = dummy.optimizeParams(target_wvl[-1]-BW1/2)
+	else:
+		d_0.period, d_0.w1, d_0.w2 = dummy.optimizeParams(target_wvl[0]-BW1/2)
+		d_end.period, d_end.w1, d_end.w2 = dummy.optimizeParams(target_wvl[-1]+BW1/2)
+
+	# center
+	numIntra = abs(round(( target_wvl[-1]-BW1/2 - (target_wvl[0]+BW1/2) )/BW2))
+	Nin = [numIntra-1, numIntra, numIntra+1]
+	N2 = [N2-50, N2, N2+50]
+
+	i, j = np.meshgrid(N2, Nin)
+	fig, subfigs = plt.subplots(3 ,3, sharex="all", sharey="all", tight_layout=True, figsize=(9,6))
+	fig.figsize= (10,6)
+
+	for N2, Nin, subfig in zip(i.reshape(-1),j.reshape(-1), subfigs.reshape(-1)):
+
+		wvls = np.linspace(min(target_wvl),max(target_wvl), Nin+2)
+		middle_wvls = wvls[1:-1]
+		middle_devices = []
+
+		for wvl in middle_wvls:
+			device = ChirpedContraDC(N=N2)
+			device.period, device.w1, device.w2 = device.fetchParams(wvl)
+			middle_devices.append(device)
+
+		if target_wvl[-1] > target_wvl[0]:
+			d_middle = middle_devices[0]
+			for i in range(len(middle_devices)-1):
+				d_middle = d_middle + middle_devices[i+1]
+		else:
+			d_middle = middle_devices[-1]
+			for i in range(len(middle_devices)-1, 0, -1):
+				d_middle = d_middle + middle_devices[i-1]
+
+		if target_wvl[-1] > target_wvl[0]:
+			device = d_0 + d_middle + d_end
+		else:
+			device = d_0 + d_middle + d_end
+
+		device.wvl_range = [1500e-9, 1650e-9]
+		device.resolution = 20
+		device.simulate()
+
+		subfig.set_title("N2 = " + str(i)+", Nin = "+str(j))
+		subfig.plot(device.wavelength, device.thru)
+
+	plt.show()
+
+
+
+autoDesign(N1, N2, target_wvl)
 
 # device = d_0 + d_end
 # device.simulate()
 # device.displayResults()
+
+
+
+
+
+
+
 
 
 
