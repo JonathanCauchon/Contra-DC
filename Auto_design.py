@@ -1,93 +1,7 @@
 from Modules import *
 from ChirpedContraDC_v2 import *
 
-# d = ChirpedContraDC(a=20, resolution=300, wvl_range=[1400e-9, 1700e-9])
-
-# d.target_wvl = [1540e-9, 1560e-9]
-# # d.N = 2500
-# d.N = 950
-# d.N_seg = 5
-# # d.getApodProfile()
-# # d.getChirpProfile()
-# # d.chirpV2()
-# # d.getPropConstants(True)
-# # d.propagate(True)
-# d.stages = 1
-# d.simulate()
-# d.displayResults()
-
-
-
-# for _ in range(2):
-# 	d.period_profile = np.append(d.period_profile[0], d.period_profile)
-# 	d.period_profile = np.append(d.period_profile, d.period_profile[-1])
-
-
-# 	d.w1_profile = np.append(d.w1_profile[0], d.w1_profile)
-# 	d.w1_profile = np.append( d.w1_profile, d.w1_profile[-1])
-
-# 	d.w2_profile = np.append(d.w2_profile[0], d.w2_profile)
-# 	d.w2_profile = np.append(d.w2_profile, d.w2_profile[-1])
-
-# 	l_seg = int(d.N/d.N_seg)
-# 	d.N_seg += 2
-# 	d.N += 2*l_seg
-
-# d.getApodProfile()
-# d.getPropConstants(True)
-# d.propagate(True)
-# d.displayResults()
-
-
-# --- Nov. 14 2019
-# Tentative ultimate design methodology
-# vini vidi vici
-
-def plotApod():
-	plt.plot(d3.apod_profile,"o")
-	plt.show()
-
-
-# resolution = 100
-# w1_right = .57e-6
-# w2_right = .45e-6
-# w1_left = .55e-6
-# w2_left = .43e-6
-
-# d1 = ChirpedContraDC(N=1000, resolution=resolution, period=314e-9, w1=w1_right, w2=w2_right)
-# d2 = ChirpedContraDC(N=300, resolution=resolution, period=318e-9)
-# d3 = ChirpedContraDC(N=300, resolution=resolution, period=322e-9)
-# d4 = ChirpedContraDC(N=1000, resolution=resolution, period=326e-9, w1=w1_left, w2=w2_left)
-# # d2.simulate()
-
-# # d3 = copy.copy(d1)
-# # d3.apod_profile = np.append(d3.apod_profile, d2.apod_profile)
-# # d3.period_profile = np.append(d3.period_profile, d2.period_profile)
-# # d3.w1_profile = np.append(d3.w1_profile, d2.w1_profile)
-# # d3.w2_profile = np.append(d3.w2_profile, d2.w2_profile)
-# # d3.N += d2.N
-# # d3.N_seg += d2.N_seg
-
-# # d3.simulate()
-# # d3.displayResults()
-# d = d1 + d2 + d3 + d4
-# d.wvl_range = [1500e-9, 1600e-9]
-# d.simulate()
-# d.displayResults()
-# # plt.figure()
-# # plt.plot(d1.apod_profile*.25)
-# # plt.plot(d2.apod_profile*.5)
-# # plt.plot(d3.apod_profile)
-# # plt.show()
-
-# Ultimate procudure !!!!!
-N1 = 500
-N2 = 350
-numIntra = 8
-target_wvl = [1610e-9, 1550e-9]
-
-
-def autoDesign(N1, N2, target_wvl):
+def autoDesign(target_wvl, N1, N2, resolution, showFig=True, saveAs=None):
 	# find bandwidths
 	dummy = ChirpedContraDC(resolution=100)
 
@@ -145,43 +59,21 @@ def autoDesign(N1, N2, target_wvl):
 		else:
 			device = d_0 + d_middle + d_end
 
-		device.wvl_range = [1500e-9, 1650e-9]
-		device.resolution = 100
+		device.wvl_range = [min(target_wvl)-15, max(target_wvl)+15]
+		device.resolution = resolution
 		device.simulate()
 
 		subfig.set_title("N2 = " + str(N2)+", Nin = "+str(int(Nin)))
 		subfig.plot(device.wavelength*1e9, device.thru)
 		subfig.plot(device.wavelength*1e9, device.drop)
+		subfig.set_xlabel("Wavelength (nm)")
+		subfig.set_ylabel("Response (dB)")
 
-	plt.show()
+	if showFig:
+		plt.show()
 
-
-
-autoDesign(N1, N2, target_wvl)
-
-# device = d_0 + d_end
-# device.simulate()
-# device.displayResults()
-
-
-
-
-
-
-
-
-
-
-# dummy.target_wvl = [target_wvl[0], target_wvl[0]]
-# print(dummy.period, dummy.w1, dummy.w2)
-
-# print(dummy.period, dummy.w1, dummy.w2)
-
-
-
-# d = ChirpedContraDC(wvl_range=[1500e-9, 1600e-9],resolution=50, period=308e-9, w1=.557e-6, w2=.437e-6)
-# d.simulate()
-# d.displayResults()
+	if saveAs is not None:
+		plt.savefig(saveAs)
 
 
 
