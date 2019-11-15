@@ -36,21 +36,45 @@ def gdsExport(target_wvl, N1, N2, Nin, resolution, showFig=True, saveAs=None):
 	middle_wvls = wvls[1:-1]
 	middle_devices = []
 
-	# for wvl in middle_wvls:
-	if True:
+	for wvl in middle_wvls:
 		device = ChirpedContraDC(N=N2)
-		device.period, device.w1, device.w2 = device.fetchParams(1550e-9)
+		device.period, device.w1, device.w2 = device.fetchParams(wvl)
 
 		# for gds
-		device.getApodProfile()
-		l_seg = int(device.N/device.N_seg)
-		K = np.repeat(device.apod_profile, l_seg)
-		z = np.linspace(0, device.period*device.N, device.N)
-		p = device.period*np.ones(device.N)
-		w1 = device.w1*np.ones(device.N)
-		w2 = device.w2*np.ones(device.N)
+		device.getGdsInfo()
+		middle_devices.append(device)
 
-		print(K.size, z.size, p.size, w1.size, w2.size)
+	if target_wvl[-1] > target_wvl[0]:
+		d_middle = middle_devices[0]
+		for i in range(len(middle_devices)-1):
+			d_middle = d_middle + middle_devices[i+1]
+	else:
+		d_middle = middle_devices[-1]
+		for i in range(len(middle_devices)-1, 0, -1):
+			d_middle = d_middle + middle_devices[i-1]
+
+	if target_wvl[-1] > target_wvl[0]:
+		device = d_0 + d_middle + d_end
+	else:
+		device = d_0 + d_middle + d_end
+
+	device.wvl_range = [1500e-9, 1650e-9]
+	device.resolution = resolution
+	device.simulate()
+
+	
+	plt.plot(device.wavelength*1e9, device.thru)
+	plt.plot(device.wavelength*1e9, device.drop)
+	plt.xlabel("Wavelength (nm)")
+	plt.ylabel("Response (dB)")
+
+	if showFig:
+		plt.show()
+
+	if saveAs is not None:
+		plt.savefig(saveAs)
+
+
 
 
 target_wvl = [1550e-9, 1560e-9]
@@ -60,36 +84,3 @@ Nin=1
 resolution=10
 
 gdsExport(target_wvl, N1, N2, Nin, resolution, showFig=True, saveAs=None)
-
-
-	# 	middle_devices.append(device)
-
-	# if target_wvl[-1] > target_wvl[0]:
-	# 	d_middle = middle_devices[0]
-	# 	for i in range(len(middle_devices)-1):
-	# 		d_middle = d_middle + middle_devices[i+1]
-	# else:
-	# 	d_middle = middle_devices[-1]
-	# 	for i in range(len(middle_devices)-1, 0, -1):
-	# 		d_middle = d_middle + middle_devices[i-1]
-
-	# if target_wvl[-1] > target_wvl[0]:
-	# 	device = d_0 + d_middle + d_end
-	# else:
-	# 	device = d_0 + d_middle + d_end
-
-	# device.wvl_range = [1500e-9, 1650e-9]
-	# device.resolution = resolution
-	# device.simulate()
-
-	# subfig.set_title("N2 = " + str(N2)+", Nin = "+str(int(Nin)))
-	# subfig.plot(device.wavelength*1e9, device.thru)
-	# subfig.plot(device.wavelength*1e9, device.drop)
-	# subfig.set_xlabel("Wavelength (nm)")
-	# subfig.set_ylabel("Response (dB)")
-
-	# if showFig:
-	# 	plt.show()
-
-	# if saveAs is not None:
-	# 	plt.savefig(saveAs)

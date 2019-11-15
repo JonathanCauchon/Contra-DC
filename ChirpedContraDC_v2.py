@@ -624,6 +624,15 @@ class ChirpedContraDC():
 			cdc3.N_seg += cdc2.N_seg
 			cdc3.z_seg = np.append(cdc1.z_seg, cdc2.z_seg+cdc1.z_seg[-1]+(cdc2.z_seg[1]-cdc2.z_seg[0]))
 
+			cdc1.getGdsInfo()
+			cdc2.getGdsInfo()
+
+			cdc3.gds_K = np.append(cdc1.gds_K, cdc2.gds_K)
+			cdc3.gds_z = np.append(cdc1.gds_z, cdc2.gds_z)
+			cdc3.gds_p = np.append(cdc1.gds_p, cdc2.gds_p)
+			cdc3.gds_w1 = np.append(cdc1.gds_w1, cdc2.gds_w1)
+			cdc3.gds_w2 = np.append(cdc1.gds_w2, cdc2.gds_w2)
+
 			return cdc3
 
 		else:
@@ -751,5 +760,21 @@ class ChirpedContraDC():
 
 
 		plt.show()
+
+
+	# export design for easy GDS implementation
+	def getGdsInfo(self):
+		if self.apod_profile is None:
+			self.getApodProfile()
+		l_seg = int(self.N/self.N_seg)
+		self.gds_K = np.repeat(self.apod_profile, l_seg)
+		self.gds_z = np.linspace(0, self.period*self.N, self.N)
+		self.gds_p = self.period*np.ones(self.N)
+		self.gds_w1 = self.w1*np.ones(self.N)
+		self.gds_w2 = self.w2*np.ones(self.N)
+
+
+
+
 
 
