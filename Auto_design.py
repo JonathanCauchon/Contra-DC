@@ -119,7 +119,6 @@ def autoDesign(N1, N2, target_wvl):
 
 	i, j = np.meshgrid(N2, Nin)
 	fig, subfigs = plt.subplots(3 ,3, sharex="all", sharey="all", tight_layout=True, figsize=(9,6))
-	fig.figsize= (10,6)
 
 	for N2, Nin, subfig in zip(i.reshape(-1),j.reshape(-1), subfigs.reshape(-1)):
 
@@ -147,11 +146,12 @@ def autoDesign(N1, N2, target_wvl):
 			device = d_0 + d_middle + d_end
 
 		device.wvl_range = [1500e-9, 1650e-9]
-		device.resolution = 20
+		device.resolution = 100
 		device.simulate()
 
-		subfig.set_title("N2 = " + str(i)+", Nin = "+str(j))
-		subfig.plot(device.wavelength, device.thru)
+		subfig.set_title("N2 = " + str(N2)+", Nin = "+str(int(Nin)))
+		subfig.plot(device.wavelength*1e9, device.thru)
+		subfig.plot(device.wavelength*1e9, device.drop)
 
 	plt.show()
 
