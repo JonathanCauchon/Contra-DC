@@ -86,48 +86,51 @@ N2 = 350
 numIntra = 8
 target_wvl = [1550e-9, 1610e-9]
 
-# find bandwidths
-dummy = ChirpedContraDC(resolution=100)
 
-dummy.N = N1
-dummy.simulate()
-dummy.getPerformance()
-BW1 = dummy.performance[1][1]*1e-9
+def autoDesign(N1, N2, target_wvl):
+	# find bandwidths
+	dummy = ChirpedContraDC(resolution=100)
 
-dummy.N = N2
-dummy.simulate()
-dummy.getPerformance()
-BW2 = dummy.performance[1][1]*1e-9
+	dummy.N = N1
+	dummy.simulate()
+	dummy.getPerformance()
+	BW1 = dummy.performance[1][1]*1e-9
 
-# extremities
-d_0 = ChirpedContraDC(N=N1)
-d_0.period, d_0.w1, d_0.w2 = dummy.optimizeParams(target_wvl[0]+BW1/2)
-d_end = copy.copy(d_0)
-d_end.period, d_end.w1, d_end.w2 = dummy.optimizeParams(target_wvl[-1]-BW1/2)
+	dummy.N = N2
+	dummy.simulate()
+	dummy.getPerformance()
+	BW2 = dummy.performance[1][1]*1e-9
 
-# center
-wvls = np.linspace(target_wvl[0],target_wvl[-1], numIntra+2)
-middle_wvls = wvls[1:-1]
+	# extremities
+	d_0 = ChirpedContraDC(N=N1)
+	d_0.period, d_0.w1, d_0.w2 = dummy.optimizeParams(target_wvl[0]+BW1/2)
+	d_end = copy.copy(d_0)
+	d_end.period, d_end.w1, d_end.w2 = dummy.optimizeParams(target_wvl[-1]-BW1/2)
 
-middle_devices = []
-for wvl in middle_wvls:
-	print(wvl)
-	device = ChirpedContraDC(N=N2)
-	device.period, device.w1, device.w2 = device.optimizeParams(wvl)
-	middle_devices.append(device)
+	# center
+	wvls = np.linspace(target_wvl[0],target_wvl[-1], numIntra+2)
+	middle_wvls = wvls[1:-1]
 
-print(middle_devices)
+	middle_devices = []
+	for wvl in middle_wvls:
+		print(wvl)
+		device = ChirpedContraDC(N=N2)
+		device.period, device.w1, device.w2 = device.fetchParams(wvl)
+		middle_devices.append(device)
 
-d_middle = middle_devices[0]
-for i in range(len(middle_devices)-1):
-	d_middle = d_middle + middle_devices[i+1]
+	d_middle = middle_devices[0]
+	for i in range(len(middle_devices)-1):
+		d_middle = d_middle + middle_devices[i+1]
 
 
-device = d_0 + d_middle + d_end
-device.wvl_range = [1500e-9, 1650e-9]
-device.resolution = 100
-device.simulate()
-device.displayResults()
+	device = d_0 + d_middle + d_end
+	device.wvl_range = [1500e-9, 1650e-9]
+	device.resolution = 100
+	device.simulate()
+	device.displayResults()
+
+
+autoDesign(N1, N2, target_wvl)
 
 # device = d_0 + d_end
 # device.simulate()
