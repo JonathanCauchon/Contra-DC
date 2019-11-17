@@ -7,10 +7,11 @@ from Auto_design import autoDesign
 # Intended designs
 center_wvl = (1610+1530)*1e-9/2
 
-# BWs = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65]*1e-9
-BWs = np.array([10e-9, 30e-9])
-target_wvls = np.transpose([center_wvl + BWs/2, center_wvl - BWs/2])
+BWs = np.arange(15, 125, 5)*1e-9
+print(BWs)
 
+# BWs = np.array([10e-9, 30e-9])
+target_wvls = np.transpose([center_wvl + BWs/2, center_wvl - BWs/2])
 
 folder_name = "Design_ANT_November"
 if not os.path.isdir(folder_name):
@@ -18,7 +19,7 @@ if not os.path.isdir(folder_name):
 
 N1 = 500
 N2 = 300
-resolution = 200
+resolution = 150
 
 
 for target_wvl in target_wvls:
