@@ -466,6 +466,19 @@ class ChirpedContraDC():
 	# end section on chirp
 	# --------------\
 
+	def matrixExp(self, M):
+		# M = sympy.Matrix([[3., -2.,  4., -2.], [5,  3, -3, -2], [5, -2,  2, -2], [5, -2, -3,  3]])
+		# M = sympy.Matrix(M)
+		# P, D = M.diagonalize()
+
+		for i in range(M.shape[0]):
+			# print(np.exp(float(D[i,i])))
+			M[i, i] = np.exp(M[i, i])
+
+		# M = np.matmul(P, D)
+		# M = np.matmul(M, np.linalg.inv(P))
+
+		return M
 
 	def propagate(self, bar):
 		# initiate arrays
@@ -530,7 +543,11 @@ class ChirpedContraDC():
 				       [j*np.conj(kappa_11)*np.exp(-j*2*beta_del_1*l_0),  j*np.conj(kappa_12)*np.exp(-j*(beta_del_1+beta_del_2)*l_0),  j*beta_del_1,  0],
 				       [j*np.conj(kappa_12)*np.exp(-j*(beta_del_1+beta_del_2)*l_0),  j*np.conj(kappa_22)*np.exp(-j*2*beta_del_2*l_0),  0,  j*beta_del_2]]
 
-				P0=np.matmul(scipy.linalg.expm(np.asarray(S_1)*l_seg),scipy.linalg.expm(np.asarray(S_2)*l_seg))
+				# P0=np.matmul(scipy.linalg.expm(np.asarray(S_1)*l_seg),scipy.linalg.expm(np.asarray(S_2)*l_seg))
+				P0=np.matmul(self.matrixExp(np.asarray(S_1)*l_seg), scipy.linalg.expm(np.asarray(S_2)*l_seg))
+				print(S_2)
+				stop
+
 				if n == 0:
 				    P1 = P0*1
 				else:
