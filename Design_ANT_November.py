@@ -18,7 +18,7 @@ if not os.path.isdir(folder_name):
 
 N1 = 500
 N2 = 300
-resolution = 50
+resolution = 200
 
 
 for target_wvl in target_wvls:
