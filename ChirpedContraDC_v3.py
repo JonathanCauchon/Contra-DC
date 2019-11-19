@@ -70,6 +70,7 @@ class ChirpedContraDC():
 		self.w2_profile = None
 
 		self.z_seg = np.linspace(0,self.N*self.period, self.N_seg)
+		self.apod_shape = "gaussian"
 
 		# Protecting the model against user-induced inconsistancies
 		# Gives warnings, errors, makes corrections
@@ -195,34 +196,46 @@ class ChirpedContraDC():
 
 
 	def getApodProfile(self):
-		ApoFunc=np.exp(-np.linspace(0,1,num=1000)**2)     #Function used for apodization (window function)
-		mirror = False                #makes the apodization function symetrical
+		if self.apod_shape is "gaussian":
+			ApoFunc=np.exp(-np.linspace(0,1,num=1000)**2)     #Function used for apodization (window function)
+			mirror = False                #makes the apodization function symetrical
 
-		l_seg = self.N*np.mean(self.period)/self.N_seg
-		n_apodization=np.arange(self.N_seg)+0.5
-		zaxis = (np.arange(self.N_seg))*l_seg
+			l_seg = self.N*np.mean(self.period)/self.N_seg
+			n_apodization=np.arange(self.N_seg)+0.5
+			zaxis = (np.arange(self.N_seg))*l_seg
 
-		if self.a == 0:
-			self.apod_profile = self.kappa*np.ones(self.N_seg)
+			if self.a == 0:
+				self.apod_profile = self.kappa*np.ones(self.N_seg)
 
-		else:
-			kappa_apodG = np.exp(-self.a*((n_apodization)-0.5*self.N_seg)**2/self.N_seg**2)
-			ApoFunc = kappa_apodG
+			else:
+				kappa_apodG = np.exp(-self.a*((n_apodization)-0.5*self.N_seg)**2/self.N_seg**2)
+				ApoFunc = kappa_apodG
 
-			profile = (ApoFunc-min(ApoFunc))/(max(ApoFunc)-(min(ApoFunc))) # normalizes the profile
+				profile = (ApoFunc-min(ApoFunc))/(max(ApoFunc)-(min(ApoFunc))) # normalizes the profile
 
-			n_profile = np.linspace(0,self.N_seg,profile.size)
-			profile = np.interp(n_apodization, n_profile, profile)
-			    
+				n_profile = np.linspace(0,self.N_seg,profile.size)
+				profile = np.interp(n_apodization, n_profile, profile)
+				    
 
-			kappaMin = 0 #self.kappa*profile[0]
-			kappaMax = self.kappa
-			kappa_apod=kappaMin+(kappaMax-kappaMin)*profile
+				kappaMin = 0 #self.kappa*profile[0]
+				kappaMax = self.kappa
+				kappa_apod=kappaMin+(kappaMax-kappaMin)*profile
 
-			self.apod_profile = kappa_apod
-			self.apod_profile[0] = 0
-			self.apod_profile[-1] = 0
-			self.l_seg = np.repeat(self.N/self.N_seg*self.period, self.N_seg)
+				self.apod_profile = kappa_apod
+				self.apod_profile[0] = 0
+				self.apod_profile[-1] = 0
+
+		elif self.apod_shape is "tanh":
+			z = np.arange(0, self.N_seg)
+			beta = self.beta
+			alpha = self.alpha
+			apod = 1/2 * (1 + np.tanh(beta*(1-2*abs(2*z/self.N_seg)**alpha)))
+			apod = np.append(np.flip(apod[0:int(apod.size/2)]), apod[0:int(apod.size/2)])
+			apod *= self.kappa
+
+			self.apod_profile = apod
+
+			# self.l_seg = np.repeat(self.N/self.N_seg*self.period, self.N_seg)
 
 	# --------------/
 	# Section relative to chirp and chirp optimization
@@ -375,6 +388,7 @@ class ChirpedContraDC():
 
 			periods = np.arange(period[0],period[-1]+1e-9,self.period_chirp_step)
 			num_per = round((period[-1]-period[0])/self.period_chirp_step + 1)
+			print(num_per)
 			l_seg = np.ceil(self.N_seg/num_per)
 			period_profile = np.repeat(periods,l_seg)
 			self.period_profile = period_profile
@@ -515,7 +529,7 @@ class ChirpedContraDC():
 			l_0 = 0
 			for n in range(self.N_seg):
 
-				l_seg = self.l_seg[n] #self.N/self.N_seg * self.period_profile[n]			
+				l_seg = self.N/self.N_seg * self.period_profile[n]			
 
 				kappa_12 = self.apod_profile[n]
 				kappa_21 = np.conj(kappa_12);
@@ -649,7 +663,7 @@ class ChirpedContraDC():
 		if self.apod_profile is None:
 			self.getApodProfile()
 
-		if self.period_profile is None:
+		if self.w1_profile is None:
 			self.getChirpProfile()
 
 		self.getPropConstants(bar)
@@ -701,27 +715,27 @@ class ChirpedContraDC():
 
 		plt.subplot(grid[0:2,0])
 		plt.title("Grating Profiles")
-		plt.plot(self.z_seg, self.apod_profile/1000,".-")
+		plt.plot(self.apod_profile/1000,".-")
 		plt.xticks([])
 		plt.ylabel("Coupling (/mm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 		# plt.text(self.N_seg/2,self.kappa/4/1000,"a = "+str(self.a),ha="center")
 
 		plt.subplot(grid[2:4,0])
-		plt.plot(self.z_seg, self.period_profile*1e9,".-")
+		plt.plot(self.period_profile*1e9,".-")
 		plt.xticks([])
 		plt.ylabel("Pitch (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 
 		plt.subplot(grid[4,0])
-		plt.plot(self.z_seg, self.w1_profile*1e9,".-",label="wg 1")
+		plt.plot(self.w1_profile*1e9,".-",label="wg 1")
 		plt.ylabel("w1 (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 		plt.xticks([])
 
 		plt.subplot(grid[5,0])
-		plt.plot(self.z_seg*1e6, self.w2_profile*1e9,".-",label="wg 2")
-		plt.xlabel("z (um)")
+		plt.plot(range(self.N_seg), self.w2_profile*1e9,".-",label="wg 2")
+		plt.xlabel("Segment")
 		plt.ylabel("w2 (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)	
 

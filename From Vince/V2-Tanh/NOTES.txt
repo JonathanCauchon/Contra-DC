@@ -1,0 +1,8 @@
+Length: 1500 um
+Period: 0.54149 um
+Total Chirp: 15 nm (linear)
+Ind. Mod.= 0.015
+grating shape: rectangle
+Apodization: user defined
+s=3
+0.5*(1+tanh(3*(1-2*abs(2*(x-Length/2)/Length)^2)))
