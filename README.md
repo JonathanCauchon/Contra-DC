@@ -25,7 +25,7 @@ p = [324e-9, 326e-9]
 wr = [1530e-9, 1600e-9] 
 
 # Device creation, simulation and performance assessment
-device = ChirpedContraDC(N=2500, a=10, w1=w1, w2=w2, period=p, wvl_range=wr, resolution=300, N_seg=100)
+device = ChirpedContraDC(N=2500, a=10, w1=w1, w2=w2, period=p, wvl_range=wr)
 device.simulate()
 device.displayResults()
 ```
