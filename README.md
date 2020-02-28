@@ -6,4 +6,4 @@ fully parameterized contra-directional coupler model including pitch and width c
 
   offers to create fully parameterizable cdc object and simulate response with TMM method.
   
-See example.py for usage.
+See example.py for usage. 
