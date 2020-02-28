@@ -17,8 +17,8 @@ from ChirpedContraDC_v3 import *
 
 
 # 3 customizable linear chirps
-w1 = [.55e-6, .56e-6]
-w2 = [.43e-6, .44e-6]
+w1 = [.55e-6, .551e-6]
+w2 = [.44e-6, .441e-6]
 p = [324e-9, 326e-9]
 
 # wvl range to plot
@@ -29,3 +29,5 @@ device = ChirpedContraDC(N=2500, a=10, w1=w1, w2=w2, period=p, wvl_range=wr, res
 device.simulate()
 device.displayResults()
 ```
+![alt text](https://github.com/JonathanCauchon/Contra-DC/blob/master/ANT_Nov_2019/Figure_1.png "Result of simulation")
+
