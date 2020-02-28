@@ -7,7 +7,6 @@ N2 = 250
 resolution = 100
 dw = 1e-9
 
-# Option 1
 if False:
 	d_0 = ChirpedContraDC(N=500, resolution=resolution, period = 322e-9)
 	d_0.w1 -= dw
