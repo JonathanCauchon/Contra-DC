@@ -1,5 +1,4 @@
 # Contra-DC
----
 
 Fully parameterizable contra-directional coupler model including pitch and width chirp.
 Offers to create fully parameterizable CDC object and simulate response with TMM method. 
