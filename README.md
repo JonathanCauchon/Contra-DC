@@ -32,5 +32,5 @@ device = ChirpedContraDC(w1=w1, w2=w2, N=N, period=period,\
 device.simulate()
 device.displayResults()
 ```
-![alt text](https://github.com/JonathanCauchon/Contra-DC/tree/master/Example_spectrum.png "Result of simulation")
+![alt text](https://github.com/JonathanCauchon/Contra-DC/blob/master/Example_spectrum.png "Result of simulation")
 
