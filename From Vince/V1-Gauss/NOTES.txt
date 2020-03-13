@@ -1,8 +1,0 @@
-Period: 0.541496 um
-Period Chirp: linear
-ApodizationP: Gaussian
-Total Chirp: 8 nm
-Tapers parameter: 0.6
-Length: 2000 um
-Ind. Mod = 0.015
-Grating shape: sine
