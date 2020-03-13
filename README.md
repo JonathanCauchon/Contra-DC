@@ -28,7 +28,7 @@ res = 500 # number of wavelength points
 
 # Device creation, simulation and performance assessment
 device = ChirpedContraDC(w1=w1, w2=w2, N=N, period=period,\
-						wvl_range=wr, resolution=res)
+				wvl_range=wr, resolution=res)
 device.simulate()
 device.displayResults()
 ```
