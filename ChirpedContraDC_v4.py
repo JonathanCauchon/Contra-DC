@@ -25,6 +25,7 @@
 """
 
 from Modules import *
+# from JC_utils import *
 
 def clc():
 	print ("\n"*10)
@@ -33,7 +34,8 @@ def clc():
 class ChirpedContraDC():
 	def __init__(self, N = 1000, period = 322e-9, a = 12, apod_shape = "gaussian",  \
 		kappa = 48000, T = 300, resolution = 300, N_seg = 50, wvl_range = [1530e-9,1580e-9],  \
-		central_wvl = 1550e-9, alpha = 10, stages = 1, w1 = .56e-6, w2 = .44e-6, target_wvl = None):
+		central_wvl = 1550e-9, alpha = 10, stages = 1, w1 = .56e-6, w2 = .44e-6, target_wvl = None, \
+		w_chirp_step = 1e-9, period_chirp_step = 2e-9):
 
 		# Class attributes
 		self.N           =  N           #  int    Number of grating periods      [-]
@@ -50,12 +52,15 @@ class ChirpedContraDC():
 		self.w2          =  w2          #  float  Width of waveguide 2           [m]
 		self.target_wvl  =  target_wvl  #  list   Targeted reflection wavelength range [m]
 		self.apod_shape  =  apod_shape  #  string described the shape of the coupling apodization []
+
+		self.period_chirp_step = period_chirp_step # To comply with GDS resolution
+		self.w_chirp_step = w_chirp_step
+
 		# Note that gap is set to 100 nm
 
 		# Constants
 		self._antiRefCoeff = 0.01
-		self.period_chirp_step = 2e-9 # To comply with GDS resolution
-		self.w_chirp_step = 1e-9
+		
 
 		# Properties that will be set through methods
 		self.apod_profile = None
@@ -688,70 +693,84 @@ class ChirpedContraDC():
 			std = np.std(dropBand)
 
 			self.performance = {
-							"Ref. wvl" : [np.round(ref_wvl, 11)*1e9, "nm"],
-							"BW"       : [np.round(bandwidth, 11)*1e9, "nm"],
+							"Ref. wvl" : [np.round(ref_wvl*1e9, 2), "nm"],
+							"BW"       : [np.round(bandwidth*1e9, 2), "nm"],
 				            "Max ref." : [np.round(dropMax,2), "dB"],
 							"Avg ref." : [np.round(avg,2), "dB"],
 							"Std dev." : [np.round(std,2), "dB"] }
 
 
 	# Display Plots and figures of merit 
-	def displayResults(self, advanced=False):
+	def displayResults(self, advanced=False, tag_url=False):
 
 		self.getPerformance()
 
 		fig = plt.figure(figsize=(9,6))
+
+		plt.style.use('ggplot')
+		plt.rcParams['axes.prop_cycle'] = cycler('color', ['blue', 'red', 'black', 'green', 'brown', 'orangered', 'purple'])
+
+		profile_ticks = np.round(np.linspace(0, self.N_seg, 4))
+		text_color = np.asarray([0,0,0]) + .25
+
 		grid = plt.GridSpec(6,3)
 
 		plt.subplot(grid[0:2,0])
-		plt.title("Grating Profiles")
-		plt.plot(self._apod_profile, ".-")
-		plt.xticks([])
-		plt.ylabel("Coupling (/mm)")
-		plt.tick_params(axis='y', direction="in", right=True)
-		# plt.text(self.N_seg/2,self.kappa/4/1000,"a = "+str(self.a),ha="center")
+		plt.title("Grating Profiles", color=text_color)
+		plt.plot(range(self.N_seg), self._apod_profile, ".-")
+		plt.xticks(profile_ticks, size=0)
+		plt.yticks(color=text_color)
+		plt.ylabel("Coupling (/mm)", color=text_color)
+		plt.grid(b=True, color='w', linestyle='-', linewidth=1.5)
+		plt.tick_params(axis=u'both', which=u'both',length=0)
 
 		plt.subplot(grid[2:4,0])
-		plt.plot(self._period_profile, ".-")
-		plt.xticks([])
-		plt.ylabel("Pitch (nm)")
-		plt.tick_params(axis='y', direction="in", right=True)
+		plt.plot(range(self.N_seg), self._period_profile, ".-")
+		plt.xticks(profile_ticks, size=0)
+		plt.yticks(color=text_color)
+		plt.ylabel("Pitch (nm)", color=text_color)
+		plt.grid(b=True, color='w', linestyle='-', linewidth=1.5)
+		plt.tick_params(axis=u'both', which=u'both',length=0)
 
 		plt.subplot(grid[4,0])
-		plt.plot(self._w1_profile, ".-", label="wg 1")
-		plt.ylabel("w1 (nm)")
-		plt.tick_params(axis='y', direction="in", right=True)
-		plt.xticks([])
+		plt.plot(range(self.N_seg), self._w2_profile, ".-", label="wg 2")
+		plt.ylabel("w2 (nm)", color=text_color)
+		plt.xticks(profile_ticks, size=0, color=text_color)
+		plt.yticks(color=text_color)
+		plt.grid(b=True, color='w', linestyle='-', linewidth=1.5)
+		plt.tick_params(axis=u'both', which=u'both',length=0)
 
 		plt.subplot(grid[5,0])
-		plt.plot(range(self.N_seg), self._w2_profile, ".-", label="wg 2")
-		plt.xlabel("Segment")
-		plt.ylabel("w2 (nm)")
-		plt.tick_params(axis='y', direction="in", right=True)	
-
+		plt.plot(range(self.N_seg), self._w1_profile, ".-", label="wg 1")
+		plt.xlabel("Segment", color=text_color)
+		plt.ylabel("w1 (nm)", color=text_color)
+		plt.xticks(profile_ticks, color=text_color)
+		plt.yticks(color = text_color)
+		plt.grid(b=True, color='w', linestyle='-', linewidth=1.5)
+		plt.tick_params(axis=u'both', which=u'both',length=0)
 
 		plt.subplot(grid[0:2,1])
-		plt.title("Specifications")
+		plt.title("Specifications", color=text_color)
 		numElems = 6
 		plt.axis([0,1,-numElems+1,1])
-		plt.text(0.5,-0,"N : " + str(self.N),fontsize=11,ha="center",va="bottom")
-		plt.text(0.5,-1,"N_seg : " + str(self.N_seg),fontsize=11,ha="center",va="bottom")
-		plt.text(0.5,-2,"a : " + str(self.a),fontsize=11,ha="center",va="bottom")
-		plt.text(0.5,-3,"p: " + str(self._period)+" nm",fontsize=11,ha="center",va="bottom")
-		plt.text(0.5,-4,"w1 : " + str(self._w1)+" nm",fontsize=11,ha="center",va="bottom")
-		plt.text(0.5,-5,"w2 : " + str(self._w2)+" nm",fontsize=11,ha="center",va="bottom")
+		plt.text(0.5,-0,"N : " + str(self.N),fontsize=11,ha="center",va="bottom", color=text_color)
+		plt.text(0.5,-1,"N_seg : " + str(self.N_seg),fontsize=11,ha="center",va="bottom", color=text_color)
+		plt.text(0.5,-2,"a : " + str(self.a),fontsize=11,ha="center",va="bottom", color=text_color)
+		plt.text(0.5,-3,"p: " + str(self._period)+" nm",fontsize=11,ha="center",va="bottom", color=text_color)
+		plt.text(0.5,-4,"w1 : " + str(self._w1)+" nm",fontsize=11,ha="center",va="bottom", color=text_color)
+		plt.text(0.5,-5,"w2 : " + str(self._w2)+" nm",fontsize=11,ha="center",va="bottom", color=text_color)
 		plt.xticks([])
 		plt.yticks([])
 		plt.box(False)
 
 
 		plt.subplot(grid[0:2,2])
-		plt.title("Performance")
+		plt.title("Performance", color=text_color)
 		numElems = len(self.performance)
 		plt.axis([0,1,-numElems+1,1])
 		for i, item  in zip(range(len(self.performance)), self.performance):
-			plt.text(0.5,-i, item +" : ", fontsize=11, ha="right", va="bottom")
-			plt.text(0.5,-i, str(self.performance[item][0])+" "+self.performance[item][1], fontsize=11, ha="left", va="bottom")
+			plt.text(0.5,-i, item +" : ", fontsize=11, ha="right", va="bottom", color=text_color)
+			plt.text(0.5,-i, str(self.performance[item][0])+" "+self.performance[item][1], fontsize=11, ha="left", va="bottom", color=text_color)
 		plt.xticks([])
 		plt.yticks([])
 		plt.box(False)
@@ -760,16 +779,29 @@ class ChirpedContraDC():
 		plt.subplot(grid[2:,1:])
 		plt.plot(self.wavelength*1e9, self.thru, label="Thru port")
 		plt.plot(self.wavelength*1e9, self.drop, label="Drop port")
-		plt.legend()
-		plt.xlabel("Wavelength (nm)")
-		plt.ylabel("Response (dB)")
+		plt.legend(loc="best", frameon=False)
+		plt.xlabel("Wavelength (nm)", color=text_color)
+		plt.ylabel("Response (dB)", color=text_color)
 		plt.tick_params(axis='y', which='both', labelleft=False, labelright=True, \
-						direction="in", right=True)
-		plt.tick_params(axis='x', top=True)
+						direction="in", right=True, color=text_color)
+		plt.yticks(color=text_color)
+		plt.xticks(color=text_color)
+		# plt.tick_params(axis='x', top=True)
+		plt.grid(b=True, color='w', linestyle='-', linewidth=1.5)
+		plt.tick_params(axis=u'both', which=u'both',length=0)
 
+		if tag_url:
+			url = "https://github.com/JonathanCauchon/Contra-DC"
+			plt.text(self._wavelength.min(), min(self.drop.min(), self.thru.min()), url, va="top", color="grey", size=6)
 
 		plt.show()
 
+	def plot_format(self):
+		plt.style.use('ggplot')
+		plt.rcParams['axes.prop_cycle'] = cycler('color', ['blue', 'red', 'black', 'green', 'brown', 'orangered', 'purple'])
+		plt.grid(b=True, color='w', linestyle='-', linewidth=1.5)
+		plt.tick_params(axis=u'both', which=u'both',length=0)
+		plt.legend(frameon=False)
 
 	# export design for easy GDS implementation
 	def getGdsInfo(self, corrugations=[38e-9, 32e-9], gap=100e-9, plot=False):

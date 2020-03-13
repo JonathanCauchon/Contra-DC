@@ -1,28 +1,25 @@
-# Example of ChirpedContraDC_v3 class usage
+# Example of ChirpedContraDC_v4 class usage
 # Many more optional properties inside class declaration
 
 from Modules import *
 from ChirpedContraDC_v4 import *
 
 
-# 3 customizable linear chirps
-w1 = [.55e-6, .57e-6]
-w2 = [.43e-6, .45e-6]
-w1 = .56e-6
-w2 = .44e-6
-p = [320e-9]
-kappa = 30
-# wvl range to plot
-wr = [1500e-9, 1600e-9] 
-N = 1400
-apod_shape = "gaussian"
+# grating parameters
+w1 = .56e-6 # waveguide 1 width
+w2 = .44e-6 # waveguide 2 width
+period = 318e-9 # grating period
+N = 1000 # number of grating periods
+
+# simulation parameters
+wr = [1530e-9, 1565e-9] # wavelength range to plot
+res = 500 # number of wavelength points
 
 # Device creation, simulation and performance assessment
-device = ChirpedContraDC(w1=w1, w2=w2, kappa=kappa*1e3, N=N, apod_shape=apod_shape, period=p, wvl_range=wr, resolution=50, N_seg=50)
-# device.w_chirp_step = .1e-9
-# device.period_chirp_step = .01e-9
+device = ChirpedContraDC(w1=w1, w2=w2, N=N, period=period,\
+						wvl_range=wr, resolution=res)
 device.simulate()
-device.displayResults()
+device.displayResults(tag_url=True)
 
 
 
