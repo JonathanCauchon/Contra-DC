@@ -38,7 +38,7 @@ def clc():
 
 
 class ChirpedContraDC():
-	def __init__(self, N = 1000, period = 322e-9, DC = 0.5, a = 12, kappa = 48000, T = 300, \
+	def __init__(self, N = 1000, period = 322e-9, DC = 0.5, a = 12, apod_shape = "gaussian", kappa = 48000, T = 300, \
 		resolution = 300, N_seg = 50, wvl_range = [1530e-9,1580e-9], central_wvl = 1550e-9, \
 		alpha = 10, stages = 1, w1 = .56e-6, w2 = .44e-6, target_wvl = None):
 
@@ -56,6 +56,7 @@ class ChirpedContraDC():
 		self.w1          =  w1          #  float  Width of waveguide 1           [m]
 		self.w2          =  w2          #  float  Width of waveguide 2           [m]
 		self.target_wvl  =  target_wvl  # list    Targeted reflection wavelength range [m]
+		self.apod_shape  =  apod_shape
 		# Note that gap is set to 100 nm
 
 		# Constants
@@ -69,11 +70,10 @@ class ChirpedContraDC():
 		self.w1_profile = None
 		self.w2_profile = None
 
-		self.z_seg = np.linspace(0,self.N*self.period, self.N_seg)
-		self.apod_shape = "gaussian"
+		
 
 		# Protecting the model against user-induced inconsistancies
-		# Gives warnings, errors, makes corrections
+		# TODO: add assert conditions for class properties
 
 		# Check if N is a multiple of N_seg
 		# if self.N%self.N_seg:
@@ -194,7 +194,7 @@ class ChirpedContraDC():
 
 
 
-
+	@jit
 	def getApodProfile(self):
 		if self.apod_shape is "gaussian":
 			ApoFunc=np.exp(-np.linspace(0,1,num=1000)**2)     #Function used for apodization (window function)
@@ -227,8 +227,7 @@ class ChirpedContraDC():
 
 		elif self.apod_shape is "tanh":
 			z = np.arange(0, self.N_seg)
-			beta = self.beta
-			alpha = self.alpha
+			alpha, beta = 2, 3
 			apod = 1/2 * (1 + np.tanh(beta*(1-2*abs(2*z/self.N_seg)**alpha)))
 			apod = np.append(np.flip(apod[0:int(apod.size/2)]), apod[0:int(apod.size/2)])
 			apod *= self.kappa
@@ -381,22 +380,28 @@ class ChirpedContraDC():
 	def getChirpProfile(self, plot=False):
 
 		if self.target_wvl is None: # if no chirp optimization is used
-			# Period chirp
-			period = self.period
-			if isinstance(self.period, float):
-				period = [self.period] # convert to list
+			# # Period chirp
+			# period = self.period
+			# if isinstance(self.period, float):
+			# 	period = [self.period] # convert to list
 
-			periods = np.arange(period[0],period[-1]+1e-9,self.period_chirp_step)
-			num_per = round((period[-1]-period[0])/self.period_chirp_step + 1)
-			print(num_per)
-			l_seg = np.ceil(self.N_seg/num_per)
-			period_profile = np.repeat(periods,l_seg)
-			self.period_profile = period_profile
-			if plot:
-				plt.figure()
-				plt.plot(self.period_profile*1e9,"o-")
-				plt.xlabel("Apodization segment")
-				plt.ylabel("Period (nm)")
+			# periods = np.arange(period[0],period[-1]+1e-9,self.period_chirp_step)
+			# num_per = round((period[-1]-period[0])/self.period_chirp_step + 1)
+			# # print(num_per)
+			# l_seg = np.ceil(self.N_seg/num_per)
+			# period_profile = np.repeat(periods,l_seg)
+			# self.period_profile = period_profile
+			# if plot:
+			# 	plt.figure()
+			# 	plt.plot(self.period_profile*1e9,"o-")
+			# 	plt.xlabel("Apodization segment")
+			# 	plt.ylabel("Period (nm)")
+
+			if isinstance(self.period, float):
+				self.period = [self.period] # convert to list
+			self.period_profile = np.linspace(self.period[0],self.period[-1],self.N_seg)
+			self.period_profile = np.round(self.period_profile/self.period_chirp_step)*self.period_chirp_step
+
 
 			# Waveguide width chirp
 			if isinstance(self.w1, float):
@@ -484,7 +489,7 @@ class ChirpedContraDC():
 	# end section on chirp
 	# --------------\
 
-
+	# @jit
 	def propagate(self, bar):
 		# initiate arrays
 		T = np.zeros((1, self.resolution),dtype=complex)
@@ -527,6 +532,7 @@ class ChirpedContraDC():
 				self.printProgressBar(ii + 1, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
 			l_0 = 0
+
 			for n in range(self.N_seg):
 
 				l_seg = self.N/self.N_seg * self.period_profile[n]			
@@ -782,18 +788,72 @@ class ChirpedContraDC():
 
 
 	# export design for easy GDS implementation
-	def getGdsInfo(self):
+	def getGdsInfo(self, corrugations=[38e-9, 32e-9], gap=100e-9, plot=False):
 		if self.apod_profile is None:
 			self.getApodProfile()
-		l_seg = int(self.N/self.N_seg)
-		self.gds_K = np.repeat(self.apod_profile, l_seg)
-		self.gds_z = np.linspace(0, self.period*self.N, self.N)
-		self.gds_p = self.period*np.ones(self.N)
-		self.gds_w1 = self.w1*np.ones(self.N)
-		self.gds_w2 = self.w2*np.ones(self.N)
+		N_per_seg = int(self.N/self.N_seg)
+		kappa = np.repeat(self.apod_profile, 2*N_per_seg)
+		corru1 = kappa/self.kappa * corrugations[0]
+		corru2 = kappa/self.kappa * corrugations[-1]
 
+		self.getChirpProfile()
 
+		w1 = np.repeat(self.w1_profile, 2*N_per_seg)
+		w2 = np.repeat(self.w2_profile, 2*N_per_seg)
+		w = np.hstack((w1, w2))
+		
 
+		self.getChirpProfile()
 
+		# print(self.period_profile.shape)
+		half_p = np.repeat(self.period_profile/2, 2*N_per_seg)
+		# gds_w1 = self.w1*np.ones(2*self.N)
+		# gds_w2 = self.w2*np.ones(2*self.N)
 
+		z = np.cumsum(half_p)
+		z -= z[0]
+		# z = np.hstack((z, z))
+		half_p = np.hstack((half_p, half_p))
 
+		x1 = corru1/2*np.ones(2*self.N)
+		x1[1::2] *= -1
+
+		x2 = -w1/2 - gap - w2/2 + corru2/2*np.ones(2*self.N)
+		x2[1::2] -= 2*corru2[1::2]/2
+		x2 *= -1 # symmetric grating
+
+		info_pos = np.hstack((np.vstack((z, x1)), np.vstack((z, x2)))).transpose()
+		
+		info_pos *= 1e6
+		half_p *= 1e6
+
+		if plot:
+			plt.plot(info_pos[0:2*self.N,0], info_pos[0:2*self.N,1])
+			plt.plot(info_pos[2*self.N:,0], info_pos[2*self.N:,1])
+			plt.title("Rectangle centers")
+
+			plt.figure()
+			plt.plot(info_pos[:,0], w*1e6, ".")
+			plt.title("WG Widths")
+
+			plt.figure()
+			plt.plot(info_pos[:,0], half_p, ".")
+			plt.title("Half Period Profile")
+
+			plt.show()
+
+		self.gds_pos = info_pos
+		self.gds_half_p = half_p
+		self.gds_w = w*1e6
+
+		return self.gds_pos, self.gds_half_p
+
+	def exportGdsInfo(self, fileName="auto", plot=False): 
+		self.getGdsInfo(plot=plot)
+		data = np.vstack((self.gds_pos[:,0], self.gds_pos[:,1], self.gds_w, self.gds_half_p)).transpose()
+		data = np.round(data, 3)
+
+		if fileName == "auto":
+			fileName = str(self.apod_shape)+"_N_"+str(self.N)+"_p_"+str(round(self.period_profile[0]*1e9))+"_"+str(round(self.period_profile[-1]*1e9))+"_Nseg_"+str(self.N_seg)
+		
+		np.savetxt("Designs/"+fileName+".txt", data, fmt="%4.3f")

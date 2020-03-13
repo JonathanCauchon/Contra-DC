@@ -195,35 +195,72 @@ class ChirpedContraDC():
 
 
 	def getApodProfile(self):
-		ApoFunc=np.exp(-np.linspace(0,1,num=1000)**2)     #Function used for apodization (window function)
-		mirror = False                #makes the apodization function symetrical
+		# ApoFunc=np.exp(-np.linspace(0,1,num=1000)**2)     #Function used for apodization (window function)
+		# mirror = False                #makes the apodization function symetrical
 
-		l_seg = self.N*np.mean(self.period)/self.N_seg
-		n_apodization=np.arange(self.N_seg)+0.5
-		zaxis = (np.arange(self.N_seg))*l_seg
+		# l_seg = self.N*np.mean(self.period)/self.N_seg
+		# n_apodization=np.arange(self.N_seg)+0.5
+		# zaxis = (np.arange(self.N_seg))*l_seg
 
-		if self.a == 0:
-			self.apod_profile = self.kappa*np.ones(self.N_seg)
+		# if self.a == 0:
+		# 	self.apod_profile = self.kappa*np.ones(self.N_seg)
 
-		else:
-			kappa_apodG = np.exp(-self.a*((n_apodization)-0.5*self.N_seg)**2/self.N_seg**2)
-			ApoFunc = kappa_apodG
+		# else:
+		# 	kappa_apodG = np.exp(-self.a*((n_apodization)-0.5*self.N_seg)**2/self.N_seg**2)
+		# 	ApoFunc = kappa_apodG
 
-			profile = (ApoFunc-min(ApoFunc))/(max(ApoFunc)-(min(ApoFunc))) # normalizes the profile
+		# 	profile = (ApoFunc-min(ApoFunc))/(max(ApoFunc)-(min(ApoFunc))) # normalizes the profile
 
-			n_profile = np.linspace(0,self.N_seg,profile.size)
-			profile = np.interp(n_apodization, n_profile, profile)
+		# 	n_profile = np.linspace(0,self.N_seg,profile.size)
+		# 	profile = np.interp(n_apodization, n_profile, profile)
 			    
 
-			kappaMin = 0 #self.kappa*profile[0]
-			kappaMax = self.kappa
-			kappa_apod=kappaMin+(kappaMax-kappaMin)*profile
+		# 	kappaMin = 0 #self.kappa*profile[0]
+		# 	kappaMax = self.kappa
+		# 	kappa_apod=kappaMin+(kappaMax-kappaMin)*profile
 
-			self.apod_profile = kappa_apod
-			self.apod_profile[0] = 0
-			self.apod_profile[-1] = 0
-			self.l_seg = np.repeat(self.N/self.N_seg*self.period, self.N_seg)
+		# 	self.apod_profile = kappa_apod
+		# 	self.apod_profile[0] = 0
+		# 	self.apod_profile[-1] = 0
+		self.l_seg = np.repeat(self.N/self.N_seg*self.period, self.N_seg)
+		
+		if self.apod_shape is "gaussian":
+			ApoFunc=np.exp(-np.linspace(0,1,num=1000)**2)     #Function used for apodization (window function)
+			mirror = False                #makes the apodization function symetrical
 
+			l_seg = self.N*np.mean(self.period)/self.N_seg
+			n_apodization=np.arange(self.N_seg)+0.5
+			zaxis = (np.arange(self.N_seg))*l_seg
+
+			if self.a == 0:
+				self.apod_profile = self.kappa*np.ones(self.N_seg)
+
+			else:
+				kappa_apodG = np.exp(-self.a*((n_apodization)-0.5*self.N_seg)**2/self.N_seg**2)
+				ApoFunc = kappa_apodG
+
+				profile = (ApoFunc-min(ApoFunc))/(max(ApoFunc)-(min(ApoFunc))) # normalizes the profile
+
+				n_profile = np.linspace(0,self.N_seg,profile.size)
+				profile = np.interp(n_apodization, n_profile, profile)
+				    
+
+				kappaMin = 0 #self.kappa*profile[0]
+				kappaMax = self.kappa
+				kappa_apod=kappaMin+(kappaMax-kappaMin)*profile
+
+				self.apod_profile = kappa_apod
+				self.apod_profile[0] = 0
+				self.apod_profile[-1] = 0
+
+		elif self.apod_shape is "tanh":
+			z = np.arange(0, self.N_seg)
+			alpha, beta = 1, 3
+			apod = 1/2 * (1 + np.tanh(beta*(1-2*abs(2*z/self.N_seg)**alpha)))
+			apod = np.append(np.flip(apod[0:int(apod.size/2)]), apod[0:int(apod.size/2)])
+			apod *= self.kappa
+
+			self.apod_profile = apod
 	# --------------/
 	# Section relative to chirp and chirp optimization
 

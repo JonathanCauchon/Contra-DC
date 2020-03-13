@@ -1,5 +1,6 @@
-"""
-	ChripedContraDC.py
+""" 
+	Class ChripedContraDC_v4.py
+	
 	Chirped contra-directional coupler model
 	Chirp your CDC, engineer your response
 	(Or let a computer engineer it for you)
@@ -9,19 +10,11 @@
 
 	Jonathan Cauchon, September 2019
 
-	
-	Class ChirpedContraDC:
-		Methods:
-			- switchTop, swapCols, swapRows: basic matrix operations
-			- printProgressBar: show progress of computation
-			- 
+	-- v4 novelties --
+	- corrections for chirp profiles that were not uniform
+	- Turned self.performance to a dict
+	- added user-friendly unit getters for easier unit conversion
 
-	-- v2 novelties --
-	v2 incorporates the target_wvl property, which is a 2-element list. When specified in 
-	intantiation, it triggers a method called optimizChirp that will find the best chirp 
-	profile combination for period, w1 and w2 in order to cover the requested reflection
-	wavelength range. The number of total periods then has to be optimized to get a nice 
-	response.
 
 """
 
@@ -38,9 +31,9 @@ def clc():
 
 
 class ChirpedContraDC():
-	def __init__(self, N = 1000, period = 322e-9, DC = 0.5, a = 12, apod_shape = "gaussian", kappa = 48000, T = 300, \
-		resolution = 300, N_seg = 50, wvl_range = [1530e-9,1580e-9], central_wvl = 1550e-9, \
-		alpha = 10, stages = 1, w1 = .56e-6, w2 = .44e-6, target_wvl = None):
+	def __init__(self, N = 1000, period = 322e-9, a = 12, apod_shape = "gaussian",  \
+		kappa = 48000, T = 300, resolution = 300, N_seg = 50, wvl_range = [1530e-9,1580e-9],  \
+		central_wvl = 1550e-9, alpha = 10, stages = 1, w1 = .56e-6, w2 = .44e-6, target_wvl = None):
 
 		# Class attributes
 		self.N           =  N           #  int    Number of grating periods      [-]
@@ -55,8 +48,8 @@ class ChirpedContraDC():
 		self.wvl_range   =  wvl_range   #  list   Start and end wavelengths      [m]
 		self.w1          =  w1          #  float  Width of waveguide 1           [m]
 		self.w2          =  w2          #  float  Width of waveguide 2           [m]
-		self.target_wvl  =  target_wvl  # list    Targeted reflection wavelength range [m]
-		self.apod_shape  =  apod_shape
+		self.target_wvl  =  target_wvl  #  list   Targeted reflection wavelength range [m]
+		self.apod_shape  =  apod_shape  #  string described the shape of the coupling apodization []
 		# Note that gap is set to 100 nm
 
 		# Constants
@@ -70,43 +63,74 @@ class ChirpedContraDC():
 		self.w1_profile = None
 		self.w2_profile = None
 
+		# Useful flag
+		self.is_simulated = False
+
 		
+		# Dictionary conatining all units relative to the model
+		self.units = {
+					"N"           :  None,   
+					"period"      :  "m",
+					"a"           :  None,       
+					"kappa"       :  "1/mm",   
+					"T"           :  "K",       
+					"resolution"  :  None,
+					"N_seg"       :  None,    
+					"alpha"       :  "dB/cm",    
+					"stages"      :  None,   
+					"wvl_range"   :  "m", 
+					"width"       :  "m",      #  
+					"target_wvl"  :  "m",
+					"apod_shape"  :  None,
+					"group delay" :  "s" }
 
-		# Protecting the model against user-induced inconsistancies
-		# TODO: add assert conditions for class properties
+	# return properties in user-friendly units
+	@property
+	def _wavelength(self):
+		return self.wavelength*1e9
 
-		# Check if N is a multiple of N_seg
-		# if self.N%self.N_seg:
-		# 	print("Number of periods (N) should be an integer multiple of the number of segments (N_seg).")
-		# 	self.N_seg = 50
-		# 	print("Number of segments was changed to "+str(self.N_seg)+".")
+	@property
+	def _period(self):
+		return np.asarray(self.period)*1e9
 
+	@property
+	def _kappa(self):
+		return self.kappa*1e-3
 
-	# Property functions: changing one property automatically affects others
-	@ property
+	@property
+	def _apod_profile(self):
+		return self.apod_profile*1e-3
+
+	@property
+	def _w1(self):
+		return np.asarray(self.w1)*1e9	
+
+	@property
+	def _w2(self):
+		return np.asarray(self.w2)*1e9
+
+	@property
+	def _period_profile(self):
+		return self.period_profile*1e9
+
+	@property
+	def _w1_profile(self):
+		return self.w1_profile*1e9	
+
+	@property
+	def _w2_profile(self):
+		return self.w2_profile*1e9
+
+	# Other non-changing properties
+	@property
 	def wavelength(self):
 		return np.linspace(self.wvl_range[0], self.wvl_range[1], self.resolution)
 
-	@ property
+	@property
 	def c(self):
 		return 299792458
 
-
-	# # linear algebra numpy manipulation functions
-	# def switchTop(self, P):
-	# 	P_FF = np.array([[P[:,0,0],P[:,0,1]],[P[:,1,0],P[:,1,1]]]).reshape((self.resolution,2,2))
-	# 	P_FG = np.asarray([[P[:,0,2],P[:,0,3]],[P[:,1,2],P[:,1,3]]]).reshape(self.resolution,2,2)
-	# 	P_GF = np.asarray([[P[:,2,0],P[:,2,1]],[P[:,3,0],P[:,3,1]]]).reshape(self.resolution,2,2)
-	# 	P_GG = np.asarray([[P[:,2,2],P[:,2,3]],[P[:,3,2],P[:,3,3]]]).reshape(self.resolution,2,2)
-
-	# 	H1 = P_FF-np.matmul(np.matmul(P_FG,np.linalg.matrix_power(P_GG,-1)),P_GF)
-	# 	H2 = np.matmul(P_FG,np.linalg.matrix_power(P_GG,-1))
-	# 	H3 = np.matmul(-np.linalg.matrix_power(P_GG,-1),P_GF)
-	# 	H4 = np.linalg.matrix_power(P_GG,-1)
-	# 	H = np.vstack((np.hstack((H1,H2)),np.hstack((H3,H4))))
-
-	# 	return H
-
+	# linear algebra numpy manipulation functions
 	def switchTop(self, P):
 		P_FF = np.asarray([[P[0][0],P[0][1]],[P[1][0],P[1][1]]])
 		P_FG = np.asarray([[P[0][2],P[0][3]],[P[1][2],P[1][3]]])
@@ -248,9 +272,8 @@ class ChirpedContraDC():
 
 			self.apod_profile = apod
 
-			# self.l_seg = np.repeat(self.N/self.N_seg*self.period, self.N_seg)
 
-	# --------------/
+	# ------------------------------------------------- \
 	# Section relative to chirp and chirp optimization
 
 
@@ -394,39 +417,30 @@ class ChirpedContraDC():
 	def getChirpProfile(self, plot=False):
 
 		if self.target_wvl is None: # if no chirp optimization is used
-			# # Period chirp
-			# period = self.period
-			# if isinstance(self.period, float):
-			# 	period = [self.period] # convert to list
 
-			# periods = np.arange(period[0],period[-1]+1e-9,self.period_chirp_step)
-			# num_per = round((period[-1]-period[0])/self.period_chirp_step + 1)
-			# # print(num_per)
-			# l_seg = np.ceil(self.N_seg/num_per)
-			# period_profile = np.repeat(periods,l_seg)
-			# self.period_profile = period_profile
-			# if plot:
-			# 	plt.figure()
-			# 	plt.plot(self.period_profile*1e9,"o-")
-			# 	plt.xlabel("Apodization segment")
-			# 	plt.ylabel("Period (nm)")
-
+			# period chirp
 			if isinstance(self.period, float):
 				self.period = [self.period] # convert to list
-			self.period_profile = np.linspace(self.period[0],self.period[-1],self.N_seg)
-			self.period_profile = np.round(self.period_profile/self.period_chirp_step)*self.period_chirp_step
+			valid_periods = np.arange(self.period[0], self.period[-1] + self.period_chirp_step/100, self.period_chirp_step)
 
+			self.period_profile = np.repeat(valid_periods, round(self.N_seg/np.size(valid_periods)))
+			while np.size(self.period_profile) < self.N_seg:
+				self.period_profile = np.append(self.period_profile, valid_periods[-1])
+			self.period_profile = np.round(self.period_profile, 15)
+			self.period_profile = self.period_profile[:self.N_seg+1]
 
 			# Waveguide width chirp
 			if isinstance(self.w1, float):
 				self.w1 = [self.w1] # convert to list
 			self.w1_profile = np.linspace(self.w1[0],self.w1[-1],self.N_seg)
-			self.w1_profile = np.round(self.w1_profile,9)
+			self.w1_profile = np.round(self.w1_profile/self.w_chirp_step)*self.w_chirp_step
+			self.w1_profile = np.round(self.w1_profile, 15)
 
 			if isinstance(self.w2, float):
 				self.w2 = [self.w2] # convert to list
 			self.w2_profile = np.linspace(self.w2[0],self.w2[-1],self.N_seg)
-			self.w2_profile = np.round(self.w2_profile,9)
+			self.w2_profile = np.round(self.w2_profile/self.w_chirp_step)*self.w_chirp_step
+			self.w2_profile = np.round(self.w2_profile, 15)
 
 		else: # if chirp optimization is used
 			self.optimizeChirp(self.target_wvl[0], self.target_wvl[-1])
@@ -441,56 +455,8 @@ class ChirpedContraDC():
 			plt.plot(self.w1_profile,"o-")
 			plt.plot(self.w2_profile,"o-")
 			plt.title("Width Chirp Profile")
+
 			plt.show()
-
-
-	# a new chirping technique: constant sides for better squareness
-	def chirpV2(self, frac=1/4):
-		# period
-		p1 = self.period[0]*np.ones(int(self.N_seg*frac))
-		p2 = np.linspace(self.period[0], self.period[-1], int(self.N_seg*(1-2*frac)))
-		p2 = np.round(p2/self.period_chirp_step/1e9,9)*self.period_chirp_step*1e9
-		p3 = self.period[-1]*np.ones(int(self.N_seg*frac))
-
-		p1=np.append(p1,p2)
-		p1=np.append(p1,p3)
-		while p1.size < self.N_seg:
-			p1=np.append(p1,self.period[-1])
-
-		self.period_profile = p1
-
-
-		w1 = self.w1[0]*np.ones(int(self.N_seg*frac))
-		w2 = np.linspace(self.w1[0], self.w1[-1], int(self.N_seg*(1-2*frac)))
-		w2 = np.round(w2,9)
-		w3 = self.w1[-1]*np.ones(int(self.N_seg*frac))
-
-		w1=np.append(w1,w2)
-		w1=np.append(w1,w3)
-		while w1.size < self.N_seg:
-			w1=np.append(w1,self.w1[-1])
-
-		self.w1_profile = w1
-	
-
-		w1 = self.w2[0]*np.ones(int(self.N_seg*frac))
-		w2 = np.linspace(self.w2[0], self.w2[-1], int(self.N_seg*(1-2*frac)))
-		w2 = np.round(w2,9)
-		w3 = self.w2[-1]*np.ones(int(self.N_seg*frac))
-
-		w1=np.append(w1,w2)
-		w1=np.append(w1,w3)
-		while w1.size < self.N_seg:
-			w1=np.append(w1,self.w2[-1])
-
-		self.w2_profile = w1
-
-		# if self.T is list:
-		# 	self.T_profile = np.linspace(self.T[0], self.T[-1], self.N_seg)
-		# else:
-		# 	self.T_profile = self.T*np.ones(self.N_seg)
-
-		# get optimal period, w1 and w2 from saved database
 
 
 	def fetchParams(self, wvl):
@@ -501,7 +467,7 @@ class ChirpedContraDC():
 
 
 	# end section on chirp
-	# --------------\
+	# --------------------------------- /
 
 
 	def propagate(self, bar):
@@ -547,6 +513,7 @@ class ChirpedContraDC():
 
 			l_0 = 0
 			for n in range(self.N_seg):
+
 
 				l_seg = self.N/self.N_seg * self.period_profile[n]			
 
@@ -614,187 +581,15 @@ class ChirpedContraDC():
 
 		self.TransferMatrix = LeftRightTransferMatrix
 
-
-	def propagate_parallel(self, bar):
-
-		# initiate vectors and arrays
-		T = np.zeros(self.resolution, dtype=complex)
-		R = np.zeros(self.resolution, dtype=complex)
-		T_co = np.zeros(self.resolution, dtype=complex)
-		R_co = np.zeros(self.resolution, dtype=complex)
-		E_Thru = np.zeros(self.resolution, dtype=complex)
-		E_Drop = np.zeros(self.resolution, dtype=complex)
-		S_1 = np.zeros((self.resolution,4,4), dtype=complex)
-		S_2 = np.zeros((self.resolution,4,4), dtype=complex)
-
-		LeftRightTransferMatrix = np.zeros((self.resolution,4,4), dtype=complex)
-		TopDownTransferMatrix = np.zeros((self.resolution,4,4), dtype=complex)
-		InOutTransferMatrix = np.zeros((self.resolution,4,4), dtype=complex)
-
-		# kappa_apod = self.getApodProfile()
-		kappa_apod = self.apod_profile
-
-		mode_kappa_a1=1
-		mode_kappa_a2=0 #no initial cross coupling
-		mode_kappa_b2=1
-		mode_kappa_b1=0
-
-		j = cmath.sqrt(-1)      # imaginary
-
-		alpha_e = 100*self.alpha/10*math.log(10)
-
-		if bar:
-			progressbar_width = self.resolution
-			# Initial call to print 0% progress
-			self.printProgressBar(0, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
-		        
-		# Propagation 
-		# i: wavelength, related to self.resolution
-		# j: profiles along grating, related to self.N_seg	
-
-		if True:
-		# for ii in range(self.resolution):
-			if bar:
-				clc()
-				print("Propagating along grating...")
-				self.printProgressBar(ii + 1, progressbar_width, prefix = 'Progress:', suffix = 'Complete', length = 50)
-
-
-			# np.reshape(self.beta1_profile, (self.N_seg, 1, self.resolution))
-			# np.reshape(self.beta2_profile, (self.N_seg, 1, self.resolution))
-			# print(self.beta1_profile.shape)
-			# self.beta1_profile = np.reshape(self.beta1_profile, (self.N_seg, self.resolution))
-			# self.beta2_profile = np.reshape(self.beta2_profile, (self.N_seg, self.resolution))
-
-			l_0 = 0
-			for n in range(self.N_seg):
-
-				l_seg = self.N/self.N_seg * self.period_profile[n]			
-
-				kappa_12 = self.apod_profile[n]
-				kappa_21 = np.conj(kappa_12);
-				kappa_11 = self._antiRefCoeff * self.apod_profile[n]
-				kappa_22 = self._antiRefCoeff * self.apod_profile[n]
-
-				
-				beta_del_1 = self.beta1_profile[:,n] - math.pi/self.period_profile[n]  - j*alpha_e/2
-				beta_del_2 = self.beta2_profile[:,n] - math.pi/self.period_profile[n]  - j*alpha_e/2
-
-				# beta_del_1 = np.squeeze(beta_del_1)
-				# print(np.squeeze(beta_del_1).shape)
-				# print(beta_del_1.shape)
-				# return
-				# return
-
-				S_1[:,0,0] = j*beta_del_1
-				S_1[:,1,1] = j*beta_del_2
-				S_1[:,2,2] = -j*beta_del_1
-				S_1[:,3,3] = -j*beta_del_1
-
-
-				S_2[:,0,0] = -j*beta_del_1
-				# S_2[0,1,:] = 
-				S_2[:,0,2] = -j*kappa_11*np.exp(j*2*beta_del_1*l_0)
-				S_2[:,0,3] = -j*kappa_12*np.exp(j*(beta_del_1+beta_del_2)*l_0)
-
-				# S_2[1,0,:] = 
-				S_2[:,1,1] = -j*beta_del_2
-				S_2[:,1,2] = -j*kappa_12*np.exp(j*(beta_del_1+beta_del_2)*l_0)
-				S_2[:,1,3] = -j*kappa_22*np.exp(j*2*beta_del_2*l_0)
-
-				S_2[:,2,0] = j*np.conj(kappa_11)*np.exp(-j*2*beta_del_1*l_0)
-				S_2[:,2,1] = j*np.conj(kappa_12)*np.exp(-j*(beta_del_1+beta_del_2)*l_0)
-				S_2[:,2,2] = j*beta_del_1
-				# S_2[2,3,:] =
-
-				S_2[:,3,0] = j*np.conj(kappa_12)*np.exp(-j*(beta_del_1+beta_del_2)*l_0)
-				S_2[:,3,1] = j*np.conj(kappa_22)*np.exp(-j*2*beta_del_2*l_0)
-				# S_2[3,2,:] = 
-				S_2[:,3,3] = j*beta_del_2     
-
-
-
-
-				# S2 = transfert matrix
-				# S_2=  [[-j*beta_del_1,  0,  -j*kappa_11*np.exp(j*2*beta_del_1*l_0),  -j*kappa_12*np.exp(j*(beta_del_1+beta_del_2)*l_0)],
-				#        [0,  -j*beta_del_2,  -j*kappa_12*np.exp(j*(beta_del_1+beta_del_2)*l_0),  -j*kappa_22*np.exp(j*2*beta_del_2*l_0)],
-				#        [j*np.conj(kappa_11)*np.exp(-j*2*beta_del_1*l_0),  j*np.conj(kappa_12)*np.exp(-j*(beta_del_1+beta_del_2)*l_0),  j*beta_del_1,  0],
-				#        [j*np.conj(kappa_12)*np.exp(-j*(beta_del_1+beta_del_2)*l_0),  j*np.conj(kappa_22)*np.exp(-j*2*beta_del_2*l_0),  0,  j*beta_del_2]]
-
-				exp1 = np.zeros(S_1.shape, dtype=complex)
-				exp2 = np.zeros(S_1.shape, dtype=complex)
-
-				for ii in range(self.resolution):
-					S1 = S_1[ii,:,:].reshape(4,4)
-					S2 = S_2[ii,:,:].reshape(4,4)
-					exp1[ii,:,:] = scipy.linalg.expm(S1*l_seg)
-					exp2[ii,:,:] = scipy.linalg.expm(S2*l_seg)
-
-
-				P0 = np.matmul(exp1, exp2)
-
-				if n == 0:
-				    P1 = P0
-				else:
-				    P1 = np.matmul(P0,P)
-				P = P1
-
-				l_0 += l_seg
-
-
-			P_ = P.reshape((4,4,self.resolution))
-			print(P_.shape)
-			T = np.zeros(self.resolution, dtype=complex)
-			R = np.zeros(self.resolution, dtype=complex)
-			T_co = np.zeros(self.resolution, dtype=complex)
-			R_co = np.zeros(self.resolution, dtype=complex)
-
-			for ii in range(self.resolution):
-				print(ii)
-				P = P_[:,:,ii]
-			   
-				LeftRightTransferMatrix[:,:,ii] = P
-				# Calculating In Out Matrix
-				# Matrix Switch, flip inputs 1&2 with outputs 1&2
-				H = self.switchTop(P)
-				InOutTransferMatrix[:,:,ii] = H
-
-				# Calculate Top Down Matrix
-				P2 = P
-				# switch the order of the inputs/outputs
-				P2=np.vstack((P2[3][:], P2[1][:], P2[2][:], P2[0][:])) # switch rows
-				P2=self.swap_cols(P2,1,2) # switch columns
-				# Matrix Switch, flip inputs 1&2 with outputs 1&2
-				P3 = self.switchTop( P2 )
-				# switch the order of the inputs/outputs
-				P3=np.vstack((P3[3][:], P3[0][:], P3[2][:], P3[1][:])) # switch rows
-				P3=self.swap_cols(P3,2,3) # switch columns
-				P3=self.swap_cols(P3,1,2) # switch columns
-
-				TopDownTransferMatrix[:,:,ii] = P3
-				T[ii] = H[0,0]*mode_kappa_a1+H[0,1]*mode_kappa_a2
-				R[ii] = H[3,0]*mode_kappa_a1+H[3,1]*mode_kappa_a2
-
-				T_co[ii] = H[1,0]*mode_kappa_a1+H[1,0]*mode_kappa_a2
-				R_co[ii] = H[2,0]*mode_kappa_a1+H[2,1]*mode_kappa_a2
-
-			E_Thru = mode_kappa_a1* + mode_kappa_a2*T_co
-			E_Drop = mode_kappa_b1*R_co + mode_kappa_b2*R
-
-
-		# return results
-		self.E_thru = E_Thru
-		self.thru = 10*np.log10(np.abs(self.E_thru)**2)
-
-		self.E_drop = E_Drop
-		self.drop = 10*np.log10(np.abs(self.E_drop)**2)
-
+		self.is_simulated = True
+        
 
 
 	def flipProfiles(self): # flips the cdc
 			self.beta1_profile = np.flip(self.beta1_profile)
 			self.beta2_profile = np.flip(self.beta2_profile)
 			self.period_profile = np.flip(self.period_profile)
+
 
 
 	def cascade(self):
@@ -812,6 +607,7 @@ class ChirpedContraDC():
 				self.thru = self.thru + thru
 				self.drop = self.drop + drop
 			self.flipProfiles() # Return to original one
+
 
 
 	# Add two CDCs to make chirped device
@@ -847,11 +643,20 @@ class ChirpedContraDC():
 			cdc3.gds_w1 = np.append(cdc1.gds_w1, cdc2.gds_w1)
 			cdc3.gds_w2 = np.append(cdc1.gds_w2, cdc2.gds_w2)
 
-			return cdc3
+		return cdc3
 
-		else:
-			print("Error: Addition has to be between two ChirpedContraDC objects.")
 
+	def getGroupDelay(self):
+		if self.is_simulated:
+			drop_phase = np.unwrap(np.angle(device.E_drop))
+			frequency = device.c/device.wavelength
+			omega = 2*np.pi*frequency
+
+			group_delay = -np.diff(dropPhase)/np.diff(omega)
+			group_delay = np.squeeze(group_delay, axis=0)
+
+			# keep same shape
+			self.group_delay = np.append(group_delay, group_delay[-1])
 
 
 	def simulate(self, bar=True):
@@ -864,6 +669,8 @@ class ChirpedContraDC():
 		self.getPropConstants(bar)
 		self.propagate(bar)
 		self.cascade()
+		
+
 
 	def getPerformance(self):
 		if self.E_thru is not None:
@@ -880,56 +687,44 @@ class ChirpedContraDC():
 			avg = np.mean(dropBand)
 			std = np.std(dropBand)
 
-			# Extinction ratio
-			ER = -1
-
-			# Smoothness
-			smoothness = -1
-
-			self.performance = \
-				[("Ref. Wvl" , np.round(ref_wvl*1e9,1)           ,  "nm"), \
-				("BW"              , np.round(bandwidth*1e9,1)  ,  "nm"), \
-				("Max Ref."         , np.round(dropMax,2)          ,  "dB"), \
-				("Avg Ref."     , np.round(avg,2)              ,  "dB"), \
-				("Std Dev."     , np.round(std,2)              ,  "dB")] \
-				# ("Exctinction Ratio"      , np.round(ER,1)               ,  "dB"), \
-				# ("Smoothness"             , np.round(smoothness)       ,  " " )]
+			self.performance = {
+							"Ref. wvl" : [np.round(ref_wvl, 11)*1e9, "nm"],
+							"BW"       : [np.round(bandwidth, 11)*1e9, "nm"],
+				            "Max ref." : [np.round(dropMax,2), "dB"],
+							"Avg ref." : [np.round(avg,2), "dB"],
+							"Std dev." : [np.round(std,2), "dB"] }
 
 
 	# Display Plots and figures of merit 
 	def displayResults(self, advanced=False):
 
-		# clc()
-		# print("Displaying results.")
-
 		self.getPerformance()
-
 
 		fig = plt.figure(figsize=(9,6))
 		grid = plt.GridSpec(6,3)
 
 		plt.subplot(grid[0:2,0])
 		plt.title("Grating Profiles")
-		plt.plot(self.apod_profile/1000,".-")
+		plt.plot(self._apod_profile, ".-")
 		plt.xticks([])
 		plt.ylabel("Coupling (/mm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 		# plt.text(self.N_seg/2,self.kappa/4/1000,"a = "+str(self.a),ha="center")
 
 		plt.subplot(grid[2:4,0])
-		plt.plot(self.period_profile*1e9,".-")
+		plt.plot(self._period_profile, ".-")
 		plt.xticks([])
 		plt.ylabel("Pitch (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 
 		plt.subplot(grid[4,0])
-		plt.plot(self.w1_profile*1e9,".-",label="wg 1")
+		plt.plot(self._w1_profile, ".-", label="wg 1")
 		plt.ylabel("w1 (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)
 		plt.xticks([])
 
 		plt.subplot(grid[5,0])
-		plt.plot(range(self.N_seg), self.w2_profile*1e9,".-",label="wg 2")
+		plt.plot(range(self.N_seg), self._w2_profile, ".-", label="wg 2")
 		plt.xlabel("Segment")
 		plt.ylabel("w2 (nm)")
 		plt.tick_params(axis='y', direction="in", right=True)	
@@ -942,9 +737,9 @@ class ChirpedContraDC():
 		plt.text(0.5,-0,"N : " + str(self.N),fontsize=11,ha="center",va="bottom")
 		plt.text(0.5,-1,"N_seg : " + str(self.N_seg),fontsize=11,ha="center",va="bottom")
 		plt.text(0.5,-2,"a : " + str(self.a),fontsize=11,ha="center",va="bottom")
-		plt.text(0.5,-3,"p: " + str(self.period)+" m",fontsize=11,ha="center",va="bottom")
-		plt.text(0.5,-4,"w1 : " + str(self.w1)+" m",fontsize=11,ha="center",va="bottom")
-		plt.text(0.5,-5,"w2 : " + str(self.w2)+" m",fontsize=11,ha="center",va="bottom")
+		plt.text(0.5,-3,"p: " + str(self._period)+" nm",fontsize=11,ha="center",va="bottom")
+		plt.text(0.5,-4,"w1 : " + str(self._w1)+" nm",fontsize=11,ha="center",va="bottom")
+		plt.text(0.5,-5,"w2 : " + str(self._w2)+" nm",fontsize=11,ha="center",va="bottom")
 		plt.xticks([])
 		plt.yticks([])
 		plt.box(False)
@@ -952,11 +747,11 @@ class ChirpedContraDC():
 
 		plt.subplot(grid[0:2,2])
 		plt.title("Performance")
-		numElems = np.size(self.performance)/3
+		numElems = len(self.performance)
 		plt.axis([0,1,-numElems+1,1])
-		for i in np.arange(0,5):
-			plt.text(0.5,-i,self.performance[i][0]+" : ",fontsize=11,ha="right",va="bottom")
-			plt.text(0.5,-i,str(self.performance[i][1])+" "+self.performance[i][2],fontsize=11,ha="left",va="bottom")
+		for i, item  in zip(range(len(self.performance)), self.performance):
+			plt.text(0.5,-i, item +" : ", fontsize=11, ha="right", va="bottom")
+			plt.text(0.5,-i, str(self.performance[item][0])+" "+self.performance[item][1], fontsize=11, ha="left", va="bottom")
 		plt.xticks([])
 		plt.yticks([])
 		plt.box(False)
