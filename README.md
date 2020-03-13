@@ -4,7 +4,7 @@
 Fully parameterizable contra-directional coupler model including pitch and width chirp.
 Offers to create fully parameterizable CDC object and simulate response with TMM method. 
 
-- See [the documentation](https://github.com/JonathanCauchon/Contra-DC/Documentation) for details on the physics of the device.
+- See [the documentation](https://github.com/JonathanCauchon/Contra-DC/tree/master/Documentation) for details on the physics of the device.
 
 
 See example below for basic usage.
@@ -33,5 +33,5 @@ device = ChirpedContraDC(w1=w1, w2=w2, N=N, period=period,\
 device.simulate()
 device.displayResults()
 ```
-![alt text](https://github.com/JonathanCauchon/Contra-DC/Example_spectrum.pdf "Result of simulation")
+![alt text](https://github.com/JonathanCauchon/Contra-DC/tree/master/Example_spectrum.png "Result of simulation")
 
