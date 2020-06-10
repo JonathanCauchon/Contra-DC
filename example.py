@@ -2,7 +2,7 @@
 # Many more optional properties inside class declaration
 
 from Modules import *
-from ChirpedContraDC_v4 import *
+from ChirpedContraDC_v3 import *
 
 
 # grating parameters
@@ -13,13 +13,13 @@ N = 1000 # number of grating periods
 
 # simulation parameters
 wr = [1530e-9, 1565e-9] # wavelength range to plot
-res = 500 # number of wavelength points
+res = 50 # number of wavelength points
 
 # Device creation, simulation and performance assessment
 device = ChirpedContraDC(w1=w1, w2=w2, N=N, period=period,\
 						wvl_range=wr, resolution=res)
 device.simulate()
-device.displayResults(tag_url=True)
+device.displayResults()
 
 
 
