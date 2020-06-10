@@ -9,7 +9,7 @@ Offers to create fully parameterizable CDC object and simulate response with TMM
 See example below for basic usage.
 
 ```python
-# Example of ChirpedContraDC_v4 class usage
+# Example of ChirpedContraDC_v5 class usage
 # Many more optional properties inside class declaration
 
 from ChirpedContraDC_v5 import *
