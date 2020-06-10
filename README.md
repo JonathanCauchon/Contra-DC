@@ -12,8 +12,7 @@ See example below for basic usage.
 # Example of ChirpedContraDC_v4 class usage
 # Many more optional properties inside class declaration
 
-from Modules import *
-from ChirpedContraDC_v4 import *
+from ChirpedContraDC_v5 import *
 
 
 # grating parameters
@@ -27,10 +26,9 @@ wr = [1530e-9, 1565e-9] # wavelength range to plot
 res = 500 # number of wavelength points
 
 # Device creation, simulation and performance assessment
-device = ChirpedContraDC(w1=w1, w2=w2, N=N, period=period,\
+device = ChirpedContraDC(w1=w1, w2=w2, N=N, period=period,
 				wvl_range=wr, resolution=res)
-device.simulate()
-device.displayResults()
+device.simulate().displayResults()
 ```
 ![alt text](https://github.com/JonathanCauchon/Contra-DC/blob/master/Example_spectrum.png "Result of simulation")
 
