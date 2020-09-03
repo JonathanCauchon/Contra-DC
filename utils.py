@@ -7,7 +7,6 @@
 
 from modules import *
 
-
 """
     Basic
 """
@@ -21,20 +20,37 @@ def clc():
 """
 
 def switchTop(P):
-    FF = P[:,:2,:2]
-    FG = P[:,:2,2:]
-    GF = P[:,2:,:2]
-    GG = P[:,2:,2:]
-    GG_ = np.linalg.inv(GG)
+    if P.ndim == 3:
+        FF = P[:,:2,:2]
+        FG = P[:,:2,2:]
+        GF = P[:,2:,:2]
+        GG = P[:,2:,2:]
+        GG_ = np.linalg.inv(GG)
 
-    H = np.zeros(P.shape, dtype=complex)
+        H = np.zeros(P.shape, dtype=complex)
 
-    H[:,:2,:2] = FF - np.matmul(FG, np.matmul(GG_, GF))
-    H[:,:2,2:] = np.matmul(FG,GG_)
-    H[:,2:,:2] = np.matmul(-GG_,GF)
-    H[:,2:,2:] = GG_
+        H[:,:2,:2] = FF - np.matmul(FG, np.matmul(GG_, GF))
+        H[:,:2,2:] = np.matmul(FG,GG_)
+        H[:,2:,:2] = np.matmul(-GG_,GF)
+        H[:,2:,2:] = GG_
 
-    return H
+        return H
+
+    elif P.ndim == 4:
+        FF = P[:,:,:2,:2]
+        FG = P[:,:,:2,2:]
+        GF = P[:,:,2:,:2]
+        GG = P[:,:,2:,2:]
+        GG_ = np.linalg.inv(GG)
+
+        H = np.zeros(P.shape, dtype=complex)
+
+        H[:,:,:2,:2] = FF - np.matmul(FG, np.matmul(GG_, GF))
+        H[:,:,:2,2:] = np.matmul(FG,GG_)
+        H[:,:,2:,:2] = np.matmul(-GG_,GF)
+        H[:,:,2:,2:] = GG_
+
+        return H
 
 
 """ Matrix exponential
@@ -93,7 +109,6 @@ def expm(A):
 
     # Scaling step
     n_squarings = np.clip(np.ceil(np.log(A_fro / 5.371920351148152) /0.6931471805599453), a_min=0, a_max=None)
-
     # n_squarings = np.clip(np.ceil(np.log(A_fro / 5.371920351148152) /0.6931471805599453), a_min=0, a_max=None)
     scaling = 2.0 ** n_squarings
 

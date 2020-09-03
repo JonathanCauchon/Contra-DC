@@ -32,7 +32,7 @@ from utils import *
 class ChirpedContraDC():
     def __init__(self, N=1000, period=322e-9, a=10, apod_shape="gaussian",
         kappa=48000, T=300, resolution=500, N_seg=100, wvl_range=[1530e-9,1580e-9],
-        central_wvl=1550e-9, alpha=10, stages=1, w1=.56e-6, w2=.44e-6, target_wvl=None,
+        central_wvl=1550e-9, alpha=10, stages=1, w1=.56e-6, w2=.44e-6,
         w_chirp_step=1e-9, period_chirp_step=2e-9):
 
         # Class attributes
@@ -48,7 +48,6 @@ class ChirpedContraDC():
         self.wvl_range   =  wvl_range   #  list   Start and end wavelengths      [m]
         self.w1          =  w1          #  float  Width of waveguide 1           [m]
         self.w2          =  w2          #  float  Width of waveguide 2           [m]
-        self.target_wvl  =  target_wvl  #  list   Targeted reflection wavelength range [m]
         self.apod_shape  =  apod_shape  #  string described the shape of the coupling apodization []
 
         self.period_chirp_step = period_chirp_step # To comply with GDS resolution
@@ -83,7 +82,7 @@ class ChirpedContraDC():
                     "alpha"       :  "dB/cm",    
                     "stages"      :  None,   
                     "wvl_range"   :  "m", 
-                    "width"       :  "m",      #  
+                    "width"       :  "m",       
                     "target_wvl"  :  "m",
                     "apod_shape"  :  None,
                     "group delay" :  "s" }
@@ -142,25 +141,18 @@ class ChirpedContraDC():
 
     # This performs a 3d interpolation to estimate effective indices
     def getPropConstants(self):
-
-        print("Calculating propagation constants...")
         
         T0 = 300
         dneffdT = 1.87E-04      #[/K] assuming dneff/dn=1 (well confined mode)
         if self.T_profile is None:
             self.T_profile = self.T*np.ones(self.N_seg)
 
-        neffThermal = dneffdT*(self.T_profile-T0)
+        neffThermal = dneffdT*(self.T_profile - T0)
 
         # Import simulation results to be used for interpolation
         n1 = np.reshape(np.loadtxt("./Database/neff/neff_1.txt"),(5,5,5))
         n2 = np.reshape(np.loadtxt("./Database/neff/neff_2.txt"),(5,5,5))
         w1_w2_wvl = np.loadtxt("./Database/neff/w1_w2_lambda.txt")
-
-        self.n1_profile = np.zeros((self.resolution, self.N_seg))
-        self.n2_profile = np.zeros((self.resolution, self.N_seg))
-        self.beta1_profile = np.zeros((self.resolution, self.N_seg))
-        self.beta2_profile = np.zeros((self.resolution, self.N_seg))
 
         w1_tiled = np.tile(self.w1_profile, (self.resolution,1))
         w2_tiled = np.tile(self.w2_profile, (self.resolution,1))
@@ -169,7 +161,6 @@ class ChirpedContraDC():
 
         self.n1_profile = neffThermal + scipy.interpolate.interpn(w1_w2_wvl, n1, d)
         self.n2_profile = neffThermal + scipy.interpolate.interpn(w1_w2_wvl, n2, d)
-
         self.beta1_profile = 2*math.pi / wavelength_tiled * self.n1_profile
         self.beta2_profile = 2*math.pi / wavelength_tiled * self.n2_profile
 
@@ -177,72 +168,64 @@ class ChirpedContraDC():
 
 
     def getApodProfile(self):
-        if self.apod_shape is "gaussian":
-            ApoFunc=np.exp(-np.linspace(0,1,num=1000)**2)     #Function used for apodization (window function)
-            mirror = False                #makes the apodization function symetrical
+        if self.apod_profile is None:
+            z = np.arange(0,self.N_seg)
 
-            l_seg = self.N*np.mean(self.period)/self.N_seg
-            n_apodization=np.arange(self.N_seg)+0.5
-            zaxis = (np.arange(self.N_seg))*l_seg
+            if self.apod_shape is "gaussian":
+                if self.a == 0:
+                    apod = self.kappa*np.ones(self.N_seg)
+                else:
+                    apod = np.exp(-self.a*(z - self.N_seg/2)**2 /self.N_seg**2)
+                    apod = (apod - min(apod))/(max(apod) - min(apod))
+                    apod *= self.kappa
 
-            if self.a == 0:
-                self.apod_profile = self.kappa*np.ones(self.N_seg)
-
-            else:
-                kappa_apodG = np.exp(-self.a*((n_apodization)-0.5*self.N_seg)**2/self.N_seg**2)
-                ApoFunc = kappa_apodG
-
-                profile = (ApoFunc-min(ApoFunc))/(max(ApoFunc)-(min(ApoFunc))) # normalizes the profile
-
-                n_profile = np.linspace(0,self.N_seg,profile.size)
-                profile = np.interp(n_apodization, n_profile, profile)
-                    
-
-                kappaMin = 0
-                kappaMax = self.kappa
-                kappa_apod=kappaMin+(kappaMax-kappaMin)*profile
-
-                self.apod_profile = kappa_apod
-                self.apod_profile[0] = 0
-                self.apod_profile[-1] = 0
-
-        elif self.apod_shape is "tanh":
-            z = np.arange(0, self.N_seg)
-            alpha, beta = 2, 3
-            apod = 1/2 * (1 + np.tanh(beta*(1-2*abs(2*z/self.N_seg)**alpha)))
-            apod = np.append(np.flip(apod[0:int(apod.size/2)]), apod[0:int(apod.size/2)])
-            apod *= self.kappa
+            elif self.apod_shape is "tanh":
+                z = np.arange(0, self.N_seg)
+                alpha, beta = 2, 3
+                apod = 1/2 * (1 + np.tanh(beta*(1-2*abs(2*z/self.N_seg)**alpha)))
+                apod = np.append(np.flip(apod[0:int(apod.size/2)]), apod[0:int(apod.size/2)])
+                apod *= self.kappa
 
             self.apod_profile = apod
-
-        return self
+            return self
 
 
     def getChirpProfile(self):
 
         # period chirp
-        if isinstance(self.period, float):
-            self.period = [self.period] # convert to list
-        valid_periods = np.arange(self.period[0], self.period[-1] + self.period_chirp_step/100, self.period_chirp_step)
+        if self.period_profile is None:
+            if isinstance(self.period, float):
+                self.period = [self.period] # convert to list
+            valid_periods = np.arange(self.period[0], self.period[-1] + self.period_chirp_step/100, self.period_chirp_step)
 
-        self.period_profile = np.repeat(valid_periods, round(self.N_seg/np.size(valid_periods)))
-        while np.size(self.period_profile) < self.N_seg:
-            self.period_profile = np.append(self.period_profile, valid_periods[-1])
-        self.period_profile = np.round(self.period_profile, 15)
-        self.period_profile = self.period_profile[:self.N_seg+1]
+            self.period_profile = np.repeat(valid_periods, round(self.N_seg/np.size(valid_periods)))
+            while np.size(self.period_profile) < self.N_seg:
+                self.period_profile = np.append(self.period_profile, valid_periods[-1])
+            self.period_profile = np.round(self.period_profile, 15)
+            self.period_profile = self.period_profile[:self.N_seg+1]
 
         # Waveguide width chirp
-        if isinstance(self.w1, float):
-            self.w1 = [self.w1] # convert to list
-        self.w1_profile = np.linspace(self.w1[0],self.w1[-1],self.N_seg)
-        self.w1_profile = np.round(self.w1_profile/self.w_chirp_step)*self.w_chirp_step
-        self.w1_profile = np.round(self.w1_profile, 15)
+        if self.w1_profile is None:
+            if isinstance(self.w1, float):
+                self.w1 = [self.w1] # convert to list
+            self.w1_profile = np.linspace(self.w1[0],self.w1[-1],self.N_seg)
+            self.w1_profile = np.round(self.w1_profile/self.w_chirp_step)*self.w_chirp_step
+            self.w1_profile = np.round(self.w1_profile, 15)
 
-        if isinstance(self.w2, float):
-            self.w2 = [self.w2] # convert to list
-        self.w2_profile = np.linspace(self.w2[0],self.w2[-1],self.N_seg)
-        self.w2_profile = np.round(self.w2_profile/self.w_chirp_step)*self.w_chirp_step
-        self.w2_profile = np.round(self.w2_profile, 15)
+        if self.w2_profile is None:
+            if isinstance(self.w2, float):
+                self.w2 = [self.w2] # convert to list
+            self.w2_profile = np.linspace(self.w2[0],self.w2[-1],self.N_seg)
+            self.w2_profile = np.round(self.w2_profile/self.w_chirp_step)*self.w_chirp_step
+            self.w2_profile = np.round(self.w2_profile, 15)
+
+
+        if self.T_profile is None:
+            if isinstance(self.T, float) or isinstance(self.T, int):
+                self.T = [self.T] # convert to list
+            self.T_profile = np.linspace(self.T[0],self.T[-1],self.N_seg)
+
+        return self
 
 
     def makeRightShape(self, param):
@@ -253,15 +236,10 @@ class ChirpedContraDC():
 
     def propagate(self):
 
-        print("Propagating along grating...")
-
-        kappa_apod = self.apod_profile
-
         mode_kappa_a1, mode_kappa_b2 = 1, 1
         mode_kappa_a2, mode_kappa_b1 = 0, 0
 
         alpha_e = 100*self.alpha/10*math.log(10)
-        # alpha_e = 0
 
         l_seg = self.N/self.N_seg * self.period_profile   
         l_cum = np.cumsum(l_seg)
@@ -309,14 +287,13 @@ class ChirpedContraDC():
         l_seg = np.expand_dims(l_seg, (2,3))
         l_seg = np.tile(l_seg, (1,1,4,4))
 
-        M1 = expm(S1*l_seg)
-        M2 = expm(S2*l_seg)
+        # M contains EVERYTHING
+        M = expm(l_seg*(S1 + S2)) 
 
-        M = np.matmul(M1,M2)
-
-        # propagation
+        # propagate the sucker
         for n in range(self.N_seg):
             P = M[:,n,:,:] if n == 0 else np.matmul(M[:,n,:,:],P)
+            # P = np.clip(P, 0, None)
 
         left_right = P # left-right transfer matrix
         in_out = switchTop(left_right) # in-out transfer matrix
@@ -330,30 +307,13 @@ class ChirpedContraDC():
         self.E_thru = mode_kappa_a1*T + mode_kappa_a2*T_co
         self.E_drop = mode_kappa_b1*R_co + mode_kappa_b2*R
 
-        # return results
+        # return results        
         self.thru = 10*np.log10(np.abs(self.E_thru)**2).squeeze()
         self.drop = 10*np.log10(np.abs(self.E_drop)**2).squeeze()
         self.TransferMatrix = left_right
         self.is_simulated = True
 
         return self
-
-
-    def cascade(self):
-        if self.stages > 1:
-            thru1, drop1 = self.thru, self.drop
-            self.flipProfiles()
-            self.propagate(True)
-            thru2, drop2 = self.thru, self.drop
-            for _ in range(self.stages):
-                if _%2 == 0:
-                    drop, thru = drop2, thru2
-                else:
-                    drop, thru = drop1, thru1
-
-                self.thru = self.thru + thru
-                self.drop = self.drop + drop
-            self.flipProfiles() # Return to original one
 
 
     def getGroupDelay(self):
@@ -369,17 +329,13 @@ class ChirpedContraDC():
 
 
     def simulate(self):
-        if self.apod_profile is None:
-            self.getApodProfile()
 
-        if self.w1_profile is None:
-            self.getChirpProfile()
-
+        self.getApodProfile()
+        self.getChirpProfile()
         self.getPropConstants()
         self.propagate()
-        self.cascade()
+        self.getGroupDelay()
 
-        print("Done.")
         return self
         
 
@@ -423,23 +379,23 @@ class ChirpedContraDC():
 
         plt.subplot(grid[0:2,0])
         plt.title("Grating Profiles", color=text_color)
-        plt.plot(range(self.N_seg), self._apod_profile, ".-")
+        plt.plot(range(self.N_seg), self._apod_profile)
         plt.xticks(profile_ticks, size=0)
         plt.yticks(color=text_color)
-        plt.ylabel("Coupling (/mm)", color=text_color)
+        plt.ylabel("$\kappa$ (/mm)", color=text_color)
         plt.grid(b=True, color='w', linestyle='-', linewidth=1.5)
         plt.tick_params(axis=u'both', which=u'both',length=0)
 
         plt.subplot(grid[2:4,0])
-        plt.plot(range(self.N_seg), self._period_profile, ".-")
+        plt.plot(range(self.N_seg), self._period_profile)
         plt.xticks(profile_ticks, size=0)
         plt.yticks(color=text_color)
-        plt.ylabel("Pitch (nm)", color=text_color)
+        plt.ylabel("$\Lambda$ (nm)", color=text_color)
         plt.grid(b=True, color='w', linestyle='-', linewidth=1.5)
         plt.tick_params(axis=u'both', which=u'both',length=0)
 
         plt.subplot(grid[4,0])
-        plt.plot(range(self.N_seg), self._w2_profile, ".-", label="wg 2")
+        plt.plot(range(self.N_seg), self._w2_profile, label="wg 2")
         plt.ylabel("w2 (nm)", color=text_color)
         plt.xticks(profile_ticks, size=0, color=text_color)
         plt.yticks(color=text_color)
@@ -447,7 +403,7 @@ class ChirpedContraDC():
         plt.tick_params(axis=u'both', which=u'both',length=0)
 
         plt.subplot(grid[5,0])
-        plt.plot(range(self.N_seg), self._w1_profile, ".-", label="wg 1")
+        plt.plot(range(self.N_seg), self._w1_profile, label="wg 1")
         plt.xlabel("Segment", color=text_color)
         plt.ylabel("w1 (nm)", color=text_color)
         plt.xticks(profile_ticks, color=text_color)
@@ -580,6 +536,4 @@ class ChirpedContraDC():
             fileName = str(self.apod_shape)+"_N_"+str(self.N)+"_p_"+str(round(self.period_profile[0]*1e9))+"_"+str(round(self.period_profile[-1]*1e9))+"_Nseg_"+str(self.N_seg)
         
         np.savetxt("Designs/"+fileName+".txt", data, fmt="%4.3f")
-
-
 
