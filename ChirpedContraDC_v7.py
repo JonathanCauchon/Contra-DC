@@ -10,7 +10,7 @@
     Jonathan Cauchon, Created September 2019
     Last updated June 2020
 
-    -- v5 novelties --
+    -- v7 novelties --
     - Parallelization of TMM model: no more looping over wavelength
         (This is much faster)
     - Improved linalg operations to allow parallelization
@@ -52,8 +52,6 @@ class ChirpedContraDC():
 
         self.period_chirp_step = period_chirp_step # To comply with GDS resolution
         self.w_chirp_step = w_chirp_step
-
-        # Note that gap is set to 100 nm
 
         # Constants
         self._antiRefCoeff = 0.01
