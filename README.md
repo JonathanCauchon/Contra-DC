@@ -1,6 +1,6 @@
 # Contra-DC
 
-Fully parameterizable contra-directional coupler model including pitch and width chirp.
+Fully parameterizable contra-directional coupler model including chirp.
 Offers to create fully parameterizable CDC object and simulate response with TMM method. 
 
 - See [the documentation](https://github.com/JonathanCauchon/Contra-DC/tree/master/Documentation) for details on the physics of the device.
@@ -9,11 +9,10 @@ Offers to create fully parameterizable CDC object and simulate response with TMM
 See example below for basic usage.
 
 ```python
-# Example of ChirpedContraDC_v5 class usage
-# Many more optional properties inside class declaration
+# Example of ChirpedContraDC_v7 class usage
+# Many more optional properties inside class definition
 
-from ChirpedContraDC_v5 import *
-
+from ChirpedContraDC_v7 import *
 
 # grating parameters
 w1 = .56e-6 # waveguide 1 width
