@@ -260,9 +260,11 @@ plt.ylabel("Tg (ps)")
 
 plt.show()
 ```
-<img src="figures/example_1.png" alt="Example 1" style="width: 100%;">
 
-![alt text](figures/example_1_gd.png "Result of simulation")
+Output:
+
+<img src="figures/example_1.png" alt="Example 1" style="width: 100%;">
+<img src="figures/example_1_gd.png" alt="Example 1" style="width: 100%;">
 
 
 ```python
@@ -288,8 +290,10 @@ device = ContraDC(N=N, w1=w1, w2=w2, apod_shape=apod_shape,
 
 device.simulate().displayResults()
 ```
-![alt text](figures/example_2.png "Result of simulation")
 
+Output:
+
+<img src="figures/example_2.png" alt="Example 1" style="width: 100%;">
 
 
 
@@ -305,7 +309,10 @@ device.w2_profile = device.w2*np.cos(z/600)
 
 device.simulate().displayResults()
 ```
-![alt text](figures/example_3.png "Result of simulation")
+
+Output:
+
+<img src="figures/example_3.png" alt="Example 1" style="width: 100%;">
 
 
 
@@ -320,7 +327,10 @@ device = ContraDC(polyfit_file="polyfit.txt", period=335e-9)
 device.simulate().displayResults()
 
 ```
-![alt text](figures/example_4.png "Result of simulation")
+
+Output:
+
+<img src="figures/example_4.png" alt="Example 1" style="width: 100%;">
 
 
 
