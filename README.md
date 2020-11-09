@@ -21,6 +21,8 @@ and you are ready to go.
 
 ## Usage examples
 
+**Important**: When using out-of-the-box model parameters (w1 and w2), the model assumes 220-nm-thick SOI waveguide with a gap of 100 nm, and a maximum coupling power ($\kappa$) of 48 000 /m. In more general circumstances, w1 and w2 cannot be used and those three properties must be overridden. If another platform is used (other than slicon on silicon dioxide), the thermo-optic coefficient does not hold and must be overriden.
+
 Example 1 shows how instantiation, simulation and performance assessment can be done in a single line of code using the simulation tool. A regular contra-DC is created and simulated. The performances are output in the result interface. The group delay is also obtained and plotted afterwards.
 
 
