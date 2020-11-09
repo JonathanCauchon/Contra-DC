@@ -36,4 +36,4 @@ device.simulate().displayResults()
 ```
 
 
-<img src="figures/Example_spectrum.png" style="width: 50%">
+<img src="figures/Example_spectrum.png" style="width: 100%">
