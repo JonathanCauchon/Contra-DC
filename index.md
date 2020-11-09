@@ -1,12 +1,15 @@
 
-<div class="section" id="module-ContraDC">
-<span id="welcome-to-contra-dc-s-documentation"></span># Welcome to Contra-DC’s documentation![¶](#module-ContraDC "Permalink to this headline")
-Contra-directional coupler model.
+# Contra-directional Coupler Model Main Documentation
+
 Chirp your CDC, engineer your response.
-Based on Matlab model by Jonathan St-Yves
-as well as Python model by Mustafa Hammood.
+
+Based on Matlab model by Jonathan St-Yves as well as Python model by Mustafa Hammood.
+
 Created by Jonathan Cauchon, September 2019
+
 Last updated November 2020
+
+
 <dl class="class">
 <dt id="ContraDC.ContraDC">
 <em class="property">class </em><code class="descclassname">ContraDC.</code><code class="descname">ContraDC</code><span class="sig-paren">(</span><em>N=1000, period=3.22e-07, polyfit_file=None, a=10, apod_shape='gaussian', kappa=48000, T=300, resolution=500, N_seg=100, wvl_range=[1.53e-06, 1.58e-06], central_wvl=1.55e-06, alpha=10, w1=5.6e-07, w2=4.4e-07, w_chirp_step=1e-09, period_chirp_step=2e-09</em><span class="sig-paren">)</span><a class="headerlink" href="#ContraDC.ContraDC" title="Permalink to this definition">¶</a></dt>
