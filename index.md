@@ -1,12 +1,5 @@
 
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="section" id="module-ContraDC">
+   <div class="section" id="module-ContraDC">
 <span id="welcome-to-contra-dc-s-documentation"></span># Welcome to Contra-DC’s documentation![¶](#module-ContraDC "Permalink to this headline")
 Contra-directional coupler model.
 Chirp your CDC, engineer your response.
