@@ -6,12 +6,16 @@ Offers to create fully parameterizable CDC object and simulate response with TMM
 - See [the documentation](https://github.com/JonathanCauchon/Contra-DC/tree/master/Documentation) for details on the physics of the device.
 
 
-## Installation
+### Installation
 ```sh
 git clone https://github.com/JonathanCauchon/Contra-DC
 ```
+#### ContraDC.ContraDC.simulate()
+	:attributes: Hi
 
 See example below for basic usage.
+
+
 
 ```python
 # Example of ChirpedContraDC_v7 class usage
