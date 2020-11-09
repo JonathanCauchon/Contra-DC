@@ -6,7 +6,7 @@ Offers to create fully parameterizable CDC object and simulate response with TMM
 Contra-directional couplers are integrated broadband filters (see the [theory](https://github.com/JonathanCauchon/Contra-DC/tree/master/Documentation) for details
 on the physics of the device).
 
-See the [code documentation](https://jonathancauchon.github.io/ContraDC) for details on the ContraDC class and its member functions.
+See the [code documentation](https://jonathancauchon.github.io/Contra-DC/) for details on the ContraDC class and its member functions.
 
 
 ## Installation
