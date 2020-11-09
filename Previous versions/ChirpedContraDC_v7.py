@@ -30,10 +30,23 @@ from utils import *
 
 
 class ChirpedContraDC():
+    """ Contra-DC
+
+    This is the Contra-DC model 
+
+
+
+    """
     def __init__(self, N=1000, period=322e-9, a=10, apod_shape="gaussian",
         kappa=48000, T=300, resolution=500, N_seg=100, wvl_range=[1530e-9,1580e-9],
         central_wvl=1550e-9, alpha=10, stages=1, w1=.56e-6, w2=.44e-6,
         w_chirp_step=1e-9, period_chirp_step=2e-9):
+
+    """ Constructor:
+
+    this is the constructor function
+
+    """
 
         # Class attributes
         self.N           =  N           #  int    Number of grating periods      [-]
@@ -152,6 +165,10 @@ class ChirpedContraDC():
 
     # This performs a 3d interpolation to estimate effective indices
     def getPropConstants(self):
+
+        """ Get the opropagation constant
+
+        """
         
         T0 = 300
         dneffdT = 1.87E-04      #[/K] assuming dneff/dn=1 (well confined mode)
