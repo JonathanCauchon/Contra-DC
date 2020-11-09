@@ -260,7 +260,7 @@ plt.ylabel("Tg (ps)")
 
 plt.show()
 ```
-![alt text](figures/example_1.png "Result of simulation")
+<img src="figures/example_1.png" alt="Example 1" style="width: 50%;"/>
 ![alt text](figures/example_1_gd.png "Result of simulation")
 
 
