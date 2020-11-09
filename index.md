@@ -1,5 +1,5 @@
 
-   <div class="section" id="module-ContraDC">
+<div class="section" id="module-ContraDC">
 <span id="welcome-to-contra-dc-s-documentation"></span># Welcome to Contra-DC’s documentation![¶](#module-ContraDC "Permalink to this headline")
 Contra-directional coupler model.
 Chirp your CDC, engineer your response.
@@ -219,40 +219,7 @@ and self.propagate().</p>
 
 </dd></dl>
 
-<div class="toctree-wrapper compound">
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
-</ul>
-</div>
 
-
-          </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      ©2020, Jonathan Cauchon.
-      
-      |
-      Powered by [Sphinx 1.7.4](http://sphinx-doc.org/)
-      &amp; [Alabaster 0.7.10](https://github.com/bitprophet/alabaster)
-      
-      |
-      [Page source](_sources/index.rst.txt)
-    </div>
 
     
 
