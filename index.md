@@ -9,6 +9,19 @@ Created by Jonathan Cauchon, September 2019
 
 Last updated November 2020.
 
+#### Contents
+    - ContraDC.ContraDC()
+        - displayResults()
+        - getApodProfile()
+        - getChirpProfile()
+        - getGroupDelay()
+        - getPerformance()
+        - getPropConstants()
+        - makeRightShape()
+        - propagate()
+        - simulate()
+    - Examples of usage
+
 ---
 
 
