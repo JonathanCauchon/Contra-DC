@@ -302,8 +302,7 @@ Output:
 
 
 ```python
-""" Example 3: defining custom chirp profiles
-"""
+""" Example 3: defining custom chirp profiles """
 
 device = ContraDC(apod_shape="tanh")
 
