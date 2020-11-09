@@ -36,3 +36,4 @@ device.simulate().displayResults()
 ```
 ![](figures/Example_spectrum.png "Result of simulation")
 
+What is the problem?
