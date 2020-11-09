@@ -1,5 +1,5 @@
 
-# Contra-directional Coupler Model Main Documentation
+# ContraDC Class Main Documentation
 
 Chirp your CDC, engineer your response.
 
@@ -7,7 +7,10 @@ Based on Matlab model by Jonathan St-Yves as well as Python model by Mustafa Ham
 
 Created by Jonathan Cauchon, September 2019
 
-Last updated November 2020
+Last updated November 2020.
+
+---
+
 
 
 <dl class="class">
