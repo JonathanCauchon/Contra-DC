@@ -242,6 +242,10 @@ and self.propagate().</p>
 
 ### Examples
 
+Example 1 shows how instantiation, simulation and performance assessment can be done in a single line of code using 
+the simulation tool. A regular contra-DC is created and simulated. The performances are output in the result interface.
+The group delay is also obtained and plotted afterwards.
+
 ```python
 """ Example 1: regular SOI Contra-DC """
 
