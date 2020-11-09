@@ -1,38 +1,37 @@
-# Contra-DC
+## Welcome to GitHub Pages
 
-Fully parameterizable contra-directional coupler model including chirp.
-Offers to create fully parameterizable CDC object and simulate response with TMM method. 
+You can use the [editor on GitHub](https://github.com/JonathanCauchon/LunaUtils/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
 
-- See [the documentation](https://github.com/JonathanCauchon/Contra-DC/tree/master/Documentation) for details on the physics of the device.
+Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
+### Markdown
 
-## Installation
-```sh
-git clone https://github.com/JonathanCauchon/Contra-DC
+Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+
+```markdown
+Syntax highlighted code block
+
+# Header 1
+## Header 2
+### Header 3
+
+- Bulleted
+- List
+
+1. Numbered
+2. List
+
+**Bold** and _Italic_ and `Code` text
+
+[Link](url) and ![Image](src)
 ```
 
-See example below for basic usage.
+For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
-```python
-# Example of ChirpedContraDC_v7 class usage
-# Many more optional properties inside class definition
+### Jekyll Themes
 
-from ChirpedContraDC_v7 import *
+Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/JonathanCauchon/LunaUtils/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
 
-# grating parameters
-w1 = .56e-6 # waveguide 1 width
-w2 = .44e-6 # waveguide 2 width
-period = 318e-9 # grating period
-N = 1000 # number of grating periods
+### Support or Contact
 
-# simulation parameters
-wr = [1530e-9, 1565e-9] # wavelength range to plot
-res = 500 # number of wavelength points
-
-# Device creation, simulation and performance assessment
-device = ChirpedContraDC(w1=w1, w2=w2, N=N, period=period,
-				wvl_range=wr, resolution=res)
-device.simulate().displayResults()
-```
-![alt text](https://github.com/JonathanCauchon/Contra-DC/blob/master/Example_spectrum.png "Result of simulation")
-
+Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
