@@ -630,24 +630,3 @@ class ContraDC():
         plt.grid(b=True, color='w', linestyle='-', linewidth=1.5)
         plt.tick_params(axis=u'both', which=u'both',length=0)
         plt.legend(frameon=False)
-
-
-
-
-
-if "__main__" in __name__:
-
-    # Example 1: Regulat apodized Contra-DC
-    d = ContraDC().simulate().displayResults()
-
-
-
-
-
-
-
-
-
-
-
-

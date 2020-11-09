@@ -17,6 +17,7 @@ See examples below for basic usage.
 """ Example 1: regular SOI Contra-DC """
 
 # instantiate, simulate and show result
+
 device = ContraDC().simulate().displayResults()
 
 # calculate the group delay
