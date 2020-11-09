@@ -3,15 +3,26 @@
 Fully parameterizable contra-directional coupler model including chirp.
 Offers to create fully parameterizable CDC object and simulate response with TMM method. 
 
-- See [the documentation](https://github.com/JonathanCauchon/Contra-DC/tree/master/Documentation) for details on the physics of the device.
+Contra-directional couplers are integrated broadband filters (see the [theory](https://github.com/JonathanCauchon/Contra-DC/tree/master/Documentation) for details
+on the physics of the device).
+
+See the [code documentation](https://jonathancauchon.github.io/ContraDC) for details on the ContraDC class and its member functions.
 
 
 ## Installation
 ```sh
 git clone https://github.com/JonathanCauchon/Contra-DC
 ```
+Once the code code directory is in your python path, simply
+```python
+from ContraDC import *
+```
+and you are ready to go.
 
-See examples below for basic usage.
+## Usage examples
+
+Example 1 shows how instantiation, simulation and performance assessment can be done in a single line of code using the simulation tool. A regular contra-DC is created and simulated. The performances are output in the result interface. The group delay is also obtained and plotted afterwards.
+
 
 ```python
 """ Example 1: regular SOI Contra-DC """
@@ -31,9 +42,14 @@ plt.ylabel("Tg (ps)")
 
 plt.show()
 ```
+Output:
+
 ![alt text](figures/example_1.png "Result of simulation")
 ![alt text](figures/example_1_gd.png "Result of simulation")
 
+Example 2 shows the chirping capabality of the model. You can use waveguide width chirp, period
+chirp and temperature chirp. You can also use the apodization profile to be hyperbolic-tangent-shaped,
+to better perform with a chirped operation.
 
 ```python
 """ Example 2: Full chirped example.
@@ -58,10 +74,15 @@ device = ContraDC(N=N, w1=w1, w2=w2, apod_shape=apod_shape,
 
 device.simulate().displayResults()
 ```
+
+Output: 
+
 ![alt text](figures/example_2.png "Result of simulation")
 
 
 
+Example 3 shows how the chirp profiles can be customized at will. By default, a ContraDC object assumes
+linear chirp profiles. Here, we show how this can be overriden to us sinusoidal chirp profiles.
 
 ```python
 """ Example 3: defining custom chirp profiles
@@ -75,9 +96,19 @@ device.w2_profile = device.w2*np.cos(z/600)
 
 device.simulate().displayResults()
 ```
+
+Output:
+
 ![alt text](figures/example_3.png "Result of simulation")
 
 
+Example 4 shows how a custom waveguide geometry or platform can be used from previously-run eingenmode simulations.
+Simply include a text file containt the first degree polynomial fit coefficients of the supermodes in the form:
+```txt
+start_wvl, stop_wvl, n1_0, dn1/dwvl, n2_0, dn2/dwvl
+```
+and specify the path to the text file. Consequently, the model will simulate bu chirped operation is then only
+allowed for the grating period.
 
 ```python
 """ Example 4: using custom supermode indices.
@@ -90,8 +121,8 @@ device = ContraDC(polyfit_file="polyfit.txt", period=335e-9)
 device.simulate().displayResults()
 
 ```
+
+Output: 
+
 ![alt text](figures/example_4.png "Result of simulation")
-
-
-
 
