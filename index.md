@@ -1,5 +1,5 @@
 
-# ContraDC Class Main Documentation
+# ContraDC Class Documentation
 
 Chirp your CDC, engineer your response.
 
