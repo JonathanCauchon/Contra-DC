@@ -270,6 +270,9 @@ Output:
 <img src="figures/example_1.png" alt="Example 1" style="width: 100%;">
 <img src="figures/example_1_gd.png" alt="Example 1" style="width: 100%;">
 
+Example 2 shows the chirping capabality of the model. You can use waveguide width chirp, period
+chirp and temperature chirp. You can also use the apodization profile to be hyperbolic-tangent-shaped,
+to better perform with a chirped operation.
 
 ```python
 """ Example 2: Full chirped example.
@@ -300,6 +303,8 @@ Output:
 <img src="figures/example_2.png" alt="Example 1" style="width: 100%;">
 
 
+Example 3 shows how the chirp profiles can be customized at will. By default, a ContraDC object assumes
+linear chirp profiles. Here, we show how this can be overriden to us sinusoidal chirp profiles.
 
 ```python
 """ Example 3: defining custom chirp profiles """
@@ -317,7 +322,8 @@ Output:
 
 <img src="figures/example_3.png" alt="Example 1" style="width: 100%;">
 
-
+Example 4 shows how a custom waveguide geometry or platform can be used from previously-run eingenmode simulations.
+Simply include a text file containt the first degree polynomial fit coefficients of the supermodes in the form:
 
 ```python
 """ Example 4: using custom supermode indices.
@@ -334,11 +340,3 @@ device.simulate().displayResults()
 Output:
 
 <img src="figures/example_4.png" alt="Example 1" style="width: 100%;">
-
-
-
-
-
-
-    
-  
