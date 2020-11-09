@@ -5,7 +5,7 @@ Chirp your CDC, engineer your response.
 
 Based on Matlab model by Jonathan St-Yves as well as Python model by Mustafa Hammood.
 
-Created by Jonathan Cauchon, September 2019
+Created by Jonathan Cauchon, September 2019.
 
 Last updated November 2020.
 
