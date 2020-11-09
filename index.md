@@ -34,5 +34,5 @@ device = ChirpedContraDC(w1=w1, w2=w2, N=N, period=period,
 				wvl_range=wr, resolution=res)
 device.simulate().displayResults()
 ```
-![](figure/Example_spectrum.png "Result of simulation")
+![](figures/Example_spectrum.png "Result of simulation")
 
