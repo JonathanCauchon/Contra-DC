@@ -232,7 +232,7 @@ class ContraDC():
 
         else:
             # polyfit of the type n1 = a1*wvl + b1, n2 = a2*wvl + b2
-            with open("polyfit.txt", "r") as f:
+            with open(self.polyfit_file, "r") as f:
                 text = f.read()
                 wvl1, wvl2, b1, a1, b2, a2 = text.split(",")
 
