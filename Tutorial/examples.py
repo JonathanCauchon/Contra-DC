@@ -8,7 +8,6 @@ from ContraDC import *
 # change directory for database
 import os
 os.chdir("../")
-print(os.getcwd())
 
 
 
