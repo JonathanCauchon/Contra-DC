@@ -10,13 +10,11 @@ Created by Jonathan Cauchon, September 2019.
 Last updated November 2020.
 
 ### Contents
-- <a href="#ContraDC-Class">Example headline</a>
-- [ContraDC class](#ContraDC-Class)
-- [Examples of usage](#Examples-of-Usage)
+- <a href="#ContraDC-Class">ContraDC Class</a>
+- <a href="#Examples-of-Usage">Examples of Usage</a>
 
 ---
 
-### ContraDC Class
 <h3>ContraDC Class</h3>
 
 <dl class="class">
@@ -233,7 +231,7 @@ and self.propagate().</p>
 
 
 
-### Examples of Usage
+<h3>Examples of Usage</h3>
 
 **Important**: When using out-of-the-box model parameters (w1 and w2), the model assumes 220-nm-thick SOI waveguide with a gap of 100 nm, and a maximum coupling power (kappa) of 48 000 /m. In more general circumstances, w1 and w2 cannot be used and those three properties must be overridden. If another platform is used (other than slicon on silicon dioxide), the thermo-optic coefficient does not hold and must be overriden.
 
