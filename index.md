@@ -10,8 +10,8 @@ Created by Jonathan Cauchon, September 2019.
 Last updated November 2020.
 
 ### Contents
-- <a href="#ContraDC-Class">ContraDC Class</a>
-- <a href="#Examples-of-Usage">Examples of Usage</a>
+- ContraDC Class
+- Examples of Usage
 
 ---
 
