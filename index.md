@@ -10,7 +10,7 @@ Created by Jonathan Cauchon, September 2019.
 Last updated November 2020.
 
 ### Contents
-- <a href="ContraDC Class">Example headline</a>
+- <a href="ContraDC-Class">Example headline</a>
 - [ContraDC class](#ContraDC-Class)
 - [Examples of usage](#Examples-of-Usage)
 
