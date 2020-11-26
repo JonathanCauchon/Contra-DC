@@ -48,5 +48,34 @@ def generate_dat(pol = 'TE', terminate = True):
     if terminate == True:
         lumapi.close(mode)
     
-    #run_INTC()
+    run_INTC()
+    return
+
+def run_INTC():
+    intc = lumapi.open('interconnect')
+    
+    svg_file = "contraDC.svg"
+    sparam_file = "ContraDC_sparams.dat"
+    command ='cd("%s");'%dir_path
+    command += 'switchtodesign; new; deleteall; \n'
+    command +='addelement("Optical N Port S-Parameter"); createcompound; select("COMPOUND_1");\n'
+    command += 'component = "contraDC"; set("name",component); \n' 
+    command += 'seticon(component,"%s");\n' %(svg_file)
+    command += 'select(component+"::SPAR_1"); set("load from file", true);\n'
+    command += 'set("s parameters filename", "%s");\n' % (sparam_file)
+    command += 'set("load from file", false);\n'
+    command += 'set("passivity", "enforce");\n'
+    
+    command += 'addport(component, "%s", "Bidirectional", "Optical Signal", "%s",%s);\n' %("Port 1",'Left',0.25)
+    command += 'connect(component+"::RELAY_%s", "port", component+"::SPAR_1", "port %s");\n' % (1, 1)
+    command += 'addport(component, "%s", "Bidirectional", "Optical Signal", "%s",%s);\n' %("Port 2",'Left',0.75)
+    command += 'connect(component+"::RELAY_%s", "port", component+"::SPAR_1", "port %s");\n' % (2, 2)
+    command += 'addport(component, "%s", "Bidirectional", "Optical Signal", "%s",%s);\n' %("Port 3",'Right',0.25)
+    command += 'connect(component+"::RELAY_%s", "port", component+"::SPAR_1", "port %s");\n' % (3, 3)
+    command += 'addport(component, "%s", "Bidirectional", "Optical Signal", "%s",%s);\n' %("Port 4",'Right',0.75)
+    command += 'connect(component+"::RELAY_%s", "port", component+"::SPAR_1", "port %s");\n' % (4, 4)
+    command += 'addtolibrary;\n'
+    
+    lumapi.evalScript(intc, command)
+    
     return

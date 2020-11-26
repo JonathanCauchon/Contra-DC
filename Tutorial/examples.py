@@ -11,8 +11,6 @@ os.chdir(parent_dir)
 from ContraDC import *
 
 
-num = 1
-
 def examples(num):
     """ Function implements 4 use-case examples """
 
@@ -90,10 +88,23 @@ def examples(num):
         plt.plot(device.wavelength*1e9, device.thru)
         plt.show()
 
+    """Example 5: Lumerical-assisted flow
+    """
+    if num == 5:
+        w1 = 560e-9
+        w2 = 440e-9
+        apod_shape = "tanh"
+        N = 1200
+        period = 318e-9
+
+        device = ContraDC(N=N, w1=w1, w2=w2, apod_shape=apod_shape, period=period)
+        device.simulate().displayResults()
+
+
 
 
 
 if __name__ == "__main__":
 
-    examples(1)
+    examples(5)
 
