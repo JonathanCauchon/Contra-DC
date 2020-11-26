@@ -255,26 +255,25 @@ class ContraDC():
         :return: ContraDC object with calculated apodization profile (self.apod_profile).
         """
 
-        if self.apod_profile is None:
-            z = np.arange(0,self.N_seg)
+        z = np.arange(0,self.N_seg)
 
-            if self.apod_shape is "gaussian":
-                if self.a == 0:
-                    apod = self.kappa*np.ones(self.N_seg)
-                else:
-                    apod = np.exp(-self.a*(z - self.N_seg/2)**2 /self.N_seg**2)
-                    apod = (apod - min(apod))/(max(apod) - min(apod))
-                    apod *= self.kappa
-
-            elif self.apod_shape is "tanh":
-                z = np.arange(0, self.N_seg)
-                alpha, beta = 2, 3
-                apod = 1/2 * (1 + np.tanh(beta*(1-2*abs(2*z/self.N_seg)**alpha)))
-                apod = np.append(np.flip(apod[0:int(apod.size/2)]), apod[0:int(apod.size/2)])
+        if self.apod_shape is "gaussian":
+            if self.a == 0:
+                apod = self.kappa*np.ones(self.N_seg)
+            else:
+                apod = np.exp(-self.a*(z - self.N_seg/2)**2 /self.N_seg**2)
+                apod = (apod - min(apod))/(max(apod) - min(apod))
                 apod *= self.kappa
 
-            self.apod_profile = apod
-            return self
+        elif self.apod_shape is "tanh":
+            z = np.arange(0, self.N_seg)
+            alpha, beta = 2, 3
+            apod = 1/2 * (1 + np.tanh(beta*(1-2*abs(2*z/self.N_seg)**alpha)))
+            apod = np.append(np.flip(apod[0:int(apod.size/2)]), apod[0:int(apod.size/2)])
+            apod *= self.kappa
+
+        self.apod_profile = apod
+        return self
 
 
     def getChirpProfile(self):
@@ -291,8 +290,6 @@ class ContraDC():
         """
 
         if self.polyfit_file is None:
-
-            
 
             # Waveguide width chirp
             if self.w1_profile is None:
@@ -314,13 +311,7 @@ class ContraDC():
             if isinstance(self.period, float):
                 self.period = [self.period] # convert to list
             self.period_profile = np.linspace(self.period[0], self.period[-1], self.N_seg)
-            # valid_periods = np.arange(self.period[0], self.period[-1] + self.period_chirp_step/100, self.period_chirp_step)
 
-            # self.period_profile = np.repeat(valid_periods, round(self.N_seg/np.size(valid_periods)))
-            # while np.size(self.period_profile) < self.N_seg:
-            #     self.period_profile = np.append(self.period_profile, valid_periods[-1])
-            # self.period_profile = np.round(self.period_profile, 15)
-            # self.period_profile = self.period_profile[:self.N_seg+1]
 
         # temperature chirp
         if self.T_profile is None:
