@@ -1,14 +1,15 @@
-# append Python path to code location
-import sys
-sys.path.append("../")
+#%% append Python path to code location
+import os,sys,inspect
+
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir) 
+os.chdir(parent_dir) 
 
 # import ContraDC module
 from ContraDC import *
 
 # change directory for database
-import os
-os.chdir("../")
-
 
 
 def examples(num):
@@ -92,14 +93,4 @@ def examples(num):
 if __name__ == "__main__":
 
     examples(1)
-
-
-
-
-
-
-
-
-
-
 

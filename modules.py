@@ -7,6 +7,5 @@ import matplotlib.pyplot as plt
 import sys
 import warnings
 import copy
-import sympy
 import matplotlib.pyplot as plt 
 from cycler import cycler
