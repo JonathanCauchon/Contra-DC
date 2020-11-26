@@ -98,7 +98,7 @@ as well as key performance figures calculated in getPerormance().</p>
 
 <dl class="method">
 <dt id="ContraDC.ContraDC.gen_sparams">
-<code class="descname">displayResults</code><span class="sig-paren">(</span><em>file_name=ContraDC_sparams.mat</em><span class="sig-paren">)</span><a class="headerlink" href="#ContraDC.ContraDC.gen_sparams" title="Permalink to this definition">¶</a></dt>
+<code class="descname">gen_params</code><span class="sig-paren">(</span><em>file_name="ContraDC_sparams.mat"</em><span class="sig-paren">)</span><a class="headerlink" href="#ContraDC.ContraDC.gen_sparams" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exports the device's S-matrix to a .mat file for use with Lumerical INTERCONNECT. Requires self.is_simulated=True.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <colgroup><col class="field-name">
