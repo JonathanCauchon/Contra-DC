@@ -104,11 +104,11 @@ def examples(num):
         plt.show()
 
         # Generate compact model for Lumerical INTERCONNECT
-        #device = ContraDC().simulate().gen_sparams() # this will create a ContraDC_sparams.dat file to import into INTC
+        #device = gen_sparams() # this will create a ContraDC_sparams.dat file to import into INTC
 
 
 
 if __name__ == "__main__":
 
-    examples(5)
+    examples(1)
 
