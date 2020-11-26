@@ -426,9 +426,88 @@ class ContraDC():
         # return results        
         self.thru = 10*np.log10(np.abs(self.E_thru)**2).squeeze()
         self.drop = 10*np.log10(np.abs(self.E_drop)**2).squeeze()
-        self.TransferMatrix = left_right
+        self.transfer_matrix = left_right
         self.is_simulated = True
 
+        print(self.transfer_matrix.shape)
+
+        return self
+
+
+    def gen_sparams(self, file_name="ContraDC_sparams.mat"):
+
+        T = self.transfer_matrix
+        lambda0 = self._wavelength
+        f =  299792458/lambda0
+        
+        span = lambda0.__len__()
+        T11 = np.transpose(T[:,0,0])
+        T12 = np.transpose(T[:,0,1])
+        T13 = np.transpose(T[:,0,2])
+        T14 = np.transpose(T[:,0,3])
+
+        T21 = np.transpose(T[:,1,0])
+        T22 = np.transpose(T[:,1,1])
+        T23 = np.transpose(T[:,1,2])
+        T24 = np.transpose(T[:,1,3])
+
+        T31 = np.transpose(T[:,2,0])
+        T32 = np.transpose(T[:,2,1])
+        T33 = np.transpose(T[:,2,2])
+        T34 = np.transpose(T[:,2,3])
+
+        T41 = np.transpose(T[:,3,0])
+        T42 = np.transpose(T[:,3,1])
+        T43 = np.transpose(T[:,3,2])
+        T44 = np.transpose(T[:,3,3])
+
+        
+        S11=(T13*T44-T14*T43)/(T33*T44-T34*T43)
+        S21=(T23*T44-T24*T43)/(T33*T44-T34*T43)
+        S31=(T44)/(T33*T44-T34*T43)
+        S41=(-T43)/(T33*T44-T34*T43)
+        
+        S12=(T14*T33-T13*T34)/(T33*T44-T34*T43)
+        S22=(T24*T33-T23*T34)/(T33*T44-T34*T43)
+        S32=(-T34)/(T33*T44-T34*T43)
+        S42=(T33)/(T33*T44-T34*T43)
+        
+        S13=(T11*T33*T44-T11*T34*T43-T13*T44*T31+T13*T34*T41+T14*T43*T31-T14*T33*T41)/(T33*T44-T34*T43)
+        S23=(T21*T33*T44-T21*T34*T43-T23*T44*T31+T23*T34*T41+T24*T43*T31-T24*T33*T41)/(T33*T44-T34*T43)
+        S33=(T34*T41-T44*T31)/(T33*T44-T34*T43)
+        S43=(T43*T31-T33*T41)/(T33*T44-T34*T43)
+
+        S14=(T12*T33*T44-T12*T34*T43-T13*T44*T32+T13*T34*T42+T14*T43*T32-T14*T33*T42)/(T33*T44-T34*T43)
+        S24=(T22*T33*T44-T22*T34*T43-T23*T44*T32+T23*T34*T42+T24*T43*T32-T24*T33*T42)/(T33*T44-T34*T43)
+        S34=(T34*T42-T44*T32)/(T33*T44-T34*T43)
+        S44=(T43*T32-T33*T42)/(T33*T44-T34*T43)
+        
+        S = {}
+        S['f'] = np.matrix.transpose(f)
+        S['lambda'] = np.matrix.transpose(lambda0)
+        
+        S['S11'] = S11
+        S['S21'] = S21
+        S['S31'] = S31
+        S['S41'] = S41
+
+        S['S12'] = S12
+        S['S22'] = S22
+        S['S32'] = S32
+        S['S42'] = S42
+        
+        S['S13'] = S13
+        S['S23'] = S23
+        S['S33'] = S33
+        S['S43'] = S43
+
+        S['S14'] = S14
+        S['S24'] = S24
+        S['S34'] = S34
+        S['S44'] = np.matrix.transpose(S44)
+        
+        sio.savemat(file_name, S)
+        
         return self
 
 

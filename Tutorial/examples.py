@@ -1,6 +1,7 @@
 #%% append Python path to code location
 import os,sys,inspect
 
+# change directory for database
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir) 
@@ -9,7 +10,7 @@ os.chdir(parent_dir)
 # import ContraDC module
 from ContraDC import *
 
-# change directory for database
+
 
 
 def examples(num):
@@ -20,6 +21,7 @@ def examples(num):
 
         # instantiate, simulate and show result
         device = ContraDC().simulate().displayResults()
+        # device = ContraDC().simulate().gen_sparams()
 
         # calculate the group delay
         device.getGroupDelay()
