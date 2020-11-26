@@ -86,23 +86,18 @@ def examples(num):
         plt.plot(device.wavelength*1e9, device.thru)
         plt.show()
 
+
     """Example 5: Lumerical-assisted flow
     """
     if num == 5:
+
         apod_shape = "tanh"
         period = 318e-9
-
         w1 = 560e-9
         w2 = 440e-9
-        gap = 100e-9
 
-        
-        device = ContraDC(w1= w1, w2=w2, gap = gap, apod_shape=apod_shape, period=period)
+        device = ContraDC(w1= w1, w2=w2, apod_shape=apod_shape, period=period)
 
-        # generate a polyfit file for the waveguides geometry
-
-        device.gen_fit()
-        
         device.simulate()
         plt.plot(device.wavelength*1e9, device.drop)
         plt.plot(device.wavelength*1e9, device.thru)

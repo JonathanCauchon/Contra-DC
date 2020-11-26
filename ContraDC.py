@@ -120,7 +120,7 @@ class ContraDC():
         self.wvl_range   =  wvl_range   
         self.w1          =  w1          
         self.w2          =  w2          
-        self.apod_shape  =  apod_shape  
+        self.apod_shape  =  apod_shape 
 
         self.period_chirp_step = period_chirp_step # To comply with GDS resolution
         self.w_chirp_step = w_chirp_step
@@ -429,8 +429,6 @@ class ContraDC():
         self.drop = 10*np.log10(np.abs(self.E_drop)**2).squeeze()
         self.transfer_matrix = left_right
         self.is_simulated = True
-
-        print(self.transfer_matrix.shape)
 
         return self
 
