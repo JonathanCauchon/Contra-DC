@@ -17,6 +17,7 @@ from modules import *
 from utils import *
 
 
+
 class ContraDC():
     """
 
@@ -507,7 +508,10 @@ class ContraDC():
         S['S44'] = np.matrix.transpose(S44)
         
         sio.savemat(file_name, S)
-        
+
+        from lumerical_tools import generate_dat
+        generate_dat()
+
         return self
 
 
