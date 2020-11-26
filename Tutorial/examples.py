@@ -11,7 +11,7 @@ os.chdir(parent_dir)
 from ContraDC import *
 
 
-
+num = 1
 
 def examples(num):
     """ Function implements 4 use-case examples """
@@ -24,6 +24,8 @@ def examples(num):
 
         # calculate the group delay
         device.getGroupDelay()
+
+        device = ContraDC().simulate().gen_sparams()
 
         # plot group delay
         plt.figure()
