@@ -17,10 +17,17 @@ if platform.system() == 'Windows':
         import lumapi
         
 else:
-    lumapi_path = '/Applications/Lumerical/v202/api/python/'
-    os.chdir(lumapi_path)
-    sys.path.append(lumapi_path)
-    import lumapi
+    try:
+        lumapi_path = '/Applications/Lumerical/v202/api/python/'
+        os.chdir(lumapi_path)
+        sys.path.append(lumapi_path)
+        import lumapi
+
+    except FileNotFoundError:
+        lumapi_path = '/Applications/Lumerical v202.app/Contents/API/Python/' #Jflag
+        os.chdir(lumapi_path)
+        sys.path.append(lumapi_path)
+        import lumapi
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 if os.path.exists(os.path.join(lumapi_path,'lumapi.py')):
