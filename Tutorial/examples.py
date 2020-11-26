@@ -20,7 +20,7 @@ def examples(num):
         # instantiate, simulate and show result
         device = ContraDC().simulate().displayResults()
 
-        # calculate the group delay
+        # calculate thimpe group delay
         device.getGroupDelay()
 
         # plot group delay
@@ -104,11 +104,12 @@ def examples(num):
         plt.show()
 
         # Generate compact model for Lumerical INTERCONNECT
-        # device.gen_sparams("example_sparam.mat") # this will create a ContraDC_sparams.dat file to import into INTC
+        device.gen_sparams() # this will create a ContraDC_sparams.dat file to import into INTC
 
 
 
 if __name__ == "__main__":
 
     examples(1)
+    
 

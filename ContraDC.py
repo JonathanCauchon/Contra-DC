@@ -433,7 +433,7 @@ class ContraDC():
         return self
 
 
-    def gen_sparams(self, file_name="ContraDC_sparams.mat"):
+    def gen_sparams(self):
 
         T = self.transfer_matrix
         lambda0 = self._wavelength
@@ -505,7 +505,7 @@ class ContraDC():
         S['S34'] = S34
         S['S44'] = np.matrix.transpose(S44)
         
-        sio.savemat(file_name, S)
+        sio.savemat("ContraDC_sparams.mat", S)
 
         from lumerical_tools import generate_dat
         generate_dat()
