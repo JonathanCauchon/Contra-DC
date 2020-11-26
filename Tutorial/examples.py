@@ -21,7 +21,6 @@ def examples(num):
 
         # instantiate, simulate and show result
         device = ContraDC().simulate().displayResults()
-        # device = ContraDC().simulate().gen_sparams()
 
         # calculate the group delay
         device.getGroupDelay()
