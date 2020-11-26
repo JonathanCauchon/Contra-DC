@@ -97,6 +97,20 @@ as well as key performance figures calculated in getPerormance().</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="ContraDC.ContraDC.gen_sparams">
+<code class="descname">displayResults</code><span class="sig-paren">(</span><em>file_name=ContraDC_sparams.mat</em><span class="sig-paren">)</span><a class="headerlink" href="#ContraDC.ContraDC.gen_sparams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exports the device's S-matrix to a .mat file for use with Lumerical INTERCONNECT. Requires self.is_simulated=True.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_name</strong> (<em>str</em>) – Name of file to write (must have a .mat extension).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="ContraDC.ContraDC.getApodProfile">
 <code class="descname">getApodProfile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ContraDC.ContraDC.getApodProfile" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
