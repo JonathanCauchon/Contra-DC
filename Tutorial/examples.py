@@ -23,8 +23,6 @@ def examples(num):
         # calculate the group delay
         device.getGroupDelay()
 
-        device = ContraDC().simulate().gen_sparams()
-
         # plot group delay
         plt.figure()
         plt.plot(device.wavelength*1e9, device.group_delay*1e12)
@@ -91,16 +89,27 @@ def examples(num):
     """Example 5: Lumerical-assisted flow
     """
     if num == 5:
-        w1 = 560e-9
-        w2 = 440e-9
         apod_shape = "tanh"
-        N = 1200
         period = 318e-9
 
-        device = ContraDC(N=N, w1=w1, w2=w2, apod_shape=apod_shape, period=period)
-        device.simulate().displayResults()
+        w1 = 560e-9
+        w2 = 440e-9
+        gap = 100e-9
 
+        
+        device = ContraDC(w1= w1, w2=w2, gap = gap, apod_shape=apod_shape, period=period)
 
+        # generate a polyfit file for the waveguides geometry
+
+        device.gen_fit()
+        
+        device.simulate()
+        plt.plot(device.wavelength*1e9, device.drop)
+        plt.plot(device.wavelength*1e9, device.thru)
+        plt.show()
+
+        # Generate compact model for Lumerical INTERCONNECT
+        #device = ContraDC().simulate().gen_sparams() # this will create a ContraDC_sparams.dat file to import into INTC
 
 
 
