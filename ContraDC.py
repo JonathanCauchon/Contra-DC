@@ -543,7 +543,7 @@ class ContraDC():
         self.propagate()
 
         return self
-        
+        dd
 
     def getPerformance(self):
         """ Calculates a couple of basic performance figures of the contra-DC,
