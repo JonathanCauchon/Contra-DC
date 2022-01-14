@@ -3,7 +3,7 @@
 Fully parameterizable contra-directional coupler model including chirp.
 Offers to create fully parameterizable CDC object and simulate response with TMM method. 
 
-Contra-directional couplers are integrated broadband filters (see the [theory](https://github.com/JonathanCauchon/Contra-DC/tree/master/Documentation) for details
+Contra-directional couplers are integrated broadband filters (see the [theory](https://github.com/JonathanCauchon/Contra-DC/blob/master/Theory/Thesis.pdf) for details
 on the physics of the device).
 
 See the [code documentation](https://jonathancauchon.github.io/Contra-DC/) for details on the ContraDC class and its member functions.
