@@ -13,7 +13,7 @@ See the [code documentation](https://jonathancauchon.github.io/Contra-DC/) for d
 ```sh
 git clone https://github.com/JonathanCauchon/Contra-DC
 ```
-Once the code code directory is in your python path, simply
+Once the code directory is in your python path, simply
 ```python
 from ContraDC import *
 ```
